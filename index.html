@@ -209,12 +209,26 @@
         });
     }
 
-    startButton.addEventListener('click', () => {
-        startButton.style.display = 'none';
-        gameBoard.style.display = 'grid';
-        startTimer();
-        displayLeaderboard();
-    });
+	startButton.addEventListener('click', () => {
+		console.log("Starting game...");
+		startButton.style.display = 'none';
+		gameBoard.style.display = 'grid';
+
+		try {
+			startTimer();
+			console.log("Timer started successfully.");
+		} catch (error) {
+			console.error("Error in startTimer:", error);
+		}
+
+		try {
+			displayLeaderboard();
+			console.log("Leaderboard displayed successfully.");
+		} catch (error) {
+			console.error("Error in displayLeaderboard:", error);
+		}
+	});
+
 
     gameGrid.forEach(item => {
         const card = document.createElement('div');
