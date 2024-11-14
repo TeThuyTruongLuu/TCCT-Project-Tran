@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matching Game</title>
     <style>
-        /* Các style của giao diện trò chơi */
         body {
             display: flex;
             flex-direction: column;
@@ -96,6 +95,18 @@
             font-size: 18px;
             margin: 5px 0;
         }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .game-board {
+                grid-template-columns: repeat(2, 1fr);
+                grid-gap: 8px;
+            }
+            .card {
+                padding-top: 120%; /* Increase padding ratio for mobile */
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -172,7 +183,6 @@
 		const totalTime = minutes + seconds / 60;
 		const finalScore = Math.max(0, 10 - totalTime).toFixed(2);
 
-		// Yêu cầu người chơi nhập tên
 		const playerName = prompt(`Kết thúc trò chơi! Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}\nĐiểm: ${finalScore}\nVui lòng nhập tên của bạn:`);
 
 		if (playerName) {
@@ -206,6 +216,11 @@
 			leaderboardElement.appendChild(li);
 		});
 	}
+
+	// Gọi `displayLeaderboard()` khi tải trang để hiển thị bảng xếp hạng hiện có
+	document.addEventListener("DOMContentLoaded", () => {
+		displayLeaderboard();
+	});
 
 	startButton.addEventListener('click', () => {
 		startButton.style.display = 'none';
