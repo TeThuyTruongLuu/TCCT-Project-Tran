@@ -80,12 +80,33 @@
         .card-front {
             transform: rotateY(180deg);
         }
-        #start-button {
-            padding: 10px 20px;
-            font-size: 20px;
-            cursor: pointer;
-            margin-bottom: 20px;
-        }
+		#login-modal {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			padding: 20px;
+			border-radius: 8px;
+			background-color: white;
+			box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.3);
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			z-index: 10;
+		}
+		#login-modal input {
+			margin: 10px 0;
+			padding: 10px;
+			font-size: 16px;
+		}
+		#start-game-button {
+			background-color: #ffc107;
+			border: none;
+			padding: 10px 20px;
+			font-size: 18px;
+			cursor: pointer;
+			border-radius: 5px;
+		}
         #leaderboard {
             list-style-type: none;
             padding: 0;
@@ -112,7 +133,13 @@
 <body>
 
 <div class="timer-board">Thời gian: <span id="timer">00:00</span></div>
-<button id="start-button">Bắt đầu</button>
+<div id="login-modal">
+    <h2>Nhập mã để chơi nha</h2>
+    <input type="text" id="code-input" placeholder="Code là TCCT">
+    <input type="text" id="nickname-input" placeholder="Tên Forum/Discord/Facebook của bồ">
+    <button id="start-button">Bắt đầu</button>
+</div>
+
 <div class="game-board">
     <!-- Cards sẽ được tạo động bằng JavaScript -->
 </div>
@@ -154,11 +181,6 @@
     const images = [
         { src: "images/Cá Dụ 1.png", pairId: "Dụ" }, { src: "images/Dụ 2.png", pairId: "Dụ" },
         { src: "images/Cáo Diệp 1.png", pairId: "Diệp" }, { src: "images/Diệp.png", pairId: "Diệp" },
-        { src: "images/Cáo tuyết Lam 1.png", pairId: "Lam" }, { src: "images/Lam.png", pairId: "Lam" },
-        { src: "images/Chuột Duệ 1.png", pairId: "Duệ" }, { src: "images/Duệ.png", pairId: "Duệ" },
-        { src: "images/Corgi Lư 1.png", pairId: "Lư" }, { src: "images/Lư.png", pairId: "Lư" },
-        { src: "images/Cụt Chu 1.png", pairId: "Chu" }, { src: "images/Chu.png", pairId: "Chu" },
-        { src: "images/Hamster Tranh 1.png", pairId: "Tranh" }, { src: "images/Tranh.png", pairId: "Tranh" },
     ];
     const gameGrid = images.sort(() => 0.5 - Math.random());
     const totalPairs = images.length / 2;
@@ -178,56 +200,57 @@
         clearInterval(timerInterval);
     }
 
-	async function showFinalScore() {
-		stopTimer();
-		const totalTime = minutes + seconds / 60;
-		const finalScore = Math.max(0, 10 - totalTime).toFixed(2);
-		const playerName = prompt(`Kết thúc trò chơi! Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}\nĐiểm: ${finalScore}\nVui lòng nhập tên của bạn:`) || "Player";
+    async function updateLeaderboard(nickname, completionTime) {
+        try {
+            await addDoc(collection(db, "leaderboard"), { name: nickname, time: completionTime });
+            displayLeaderboard();
+        } catch (e) {
+            console.error("Error adding document: ", e);
+        }
+    }
 
-		await updateLeaderboard(playerName, totalTime);
-	}
+    // Hiển thị bảng xếp hạng
+    async function displayLeaderboard() {
+        try {
+            const leaderboard = [];
+            const leaderboardQuery = query(collection(db, "leaderboard"), orderBy("time", "asc"), limit(5));
+            const querySnapshot = await getDocs(leaderboardQuery);
+            querySnapshot.forEach((doc) => { leaderboard.push(doc.data()); });
 
-	async function updateLeaderboard(playerName, completionTime) {
-		try {
-			await addDoc(collection(db, "leaderboard"), { name: playerName, time: completionTime });
-			displayLeaderboard();
-		} catch (e) {
-			console.error("Error adding document: ", e);
-		}
-	}
+            leaderboardElement.innerHTML = '';
+            leaderboard.forEach(({ name, time }, index) => {
+                const li = document.createElement('li');
+                li.textContent = `#${index + 1}: ${name} - ${time.toFixed(2)} minutes`;
+                leaderboardElement.appendChild(li);
+            });
+        } catch (e) {
+            console.error("Error fetching leaderboard: ", e);
+            leaderboardElement.innerHTML = '<li>Không thể tải bảng xếp hạng</li>';
+        }
+    }
 
-	async function displayLeaderboard() {
-		try {
-			const leaderboard = [];
-			const leaderboardQuery = query(collection(db, "leaderboard"), orderBy("time", "asc"), limit(5));
-			const querySnapshot = await getDocs(leaderboardQuery);
-			querySnapshot.forEach((doc) => {
-				leaderboard.push(doc.data());
-			});
+    async function showFinalScore() {
+        stopTimer();
+        const totalTime = minutes + seconds / 60;
+        const nicknameInput = document.getElementById('nickname-input').value.trim();
+        await updateLeaderboard(nicknameInput, totalTime);
+        alert(`Kết thúc trò chơi! Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}\nĐiểm của bạn đã được lưu.`);
+    }
 
-			leaderboardElement.innerHTML = '';
-			leaderboard.forEach(({ name, time }, index) => {
-				const li = document.createElement('li');
-				li.textContent = `#${index + 1}: ${name} - ${time.toFixed(2)} minutes`;
-				leaderboardElement.appendChild(li);
-			});
-		} catch (e) {
-			console.error("Error fetching leaderboard: ", e);
-			leaderboardElement.innerHTML = '<li>Không thể tải bảng xếp hạng</li>';
-		}
-	}
+    // Kiểm tra mã trước khi bắt đầu trò chơi
+    startButton.addEventListener('click', () => {
+        const codeInput = document.getElementById('code-input').value.trim();
+        const nicknameInput = document.getElementById('nickname-input').value.trim();
 
-	// Gọi `displayLeaderboard()` khi tải trang để hiển thị bảng xếp hạng hiện có
-	document.addEventListener("DOMContentLoaded", () => {
-		displayLeaderboard();
-	});
-
-	startButton.addEventListener('click', () => {
-		startButton.style.display = 'none';
-		gameBoard.style.display = 'grid';
-		startTimer();
-		displayLeaderboard();
-	});
+        if (codeInput === "TCCT" && nicknameInput) {
+            document.getElementById('login-modal').style.display = 'none';
+            gameBoard.style.display = 'grid';
+            startTimer();
+            displayLeaderboard();
+        } else {
+            alert("Invalid code or nickname. Please enter code 'TCCT' and a valid nickname.");
+        }
+    }
 
     gameGrid.forEach(item => {
         const card = document.createElement('div');
