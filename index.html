@@ -132,7 +132,6 @@
     const db = getFirestore(app);
 
     // Biến game
-    let score = 10;
     let seconds = 0;
     let minutes = 0;
     let timerInterval;
@@ -143,7 +142,6 @@
     let matchedPairs = 0;
 
     const gameBoard = document.querySelector('.game-board');
-    const scoreDisplay = document.getElementById('score');
     const startButton = document.getElementById('start-button');
     const timerDisplay = document.getElementById('timer');
     const leaderboardElement = document.getElementById('leaderboard');
@@ -159,7 +157,7 @@
         { src: "images/Hamster Tranh 1.png", pairId: "Tranh" }, { src: "images/Tranh.png", pairId: "Tranh" },
     ];
     const gameGrid = images.sort(() => 0.5 - Math.random());
-
+	const totalPairs = images.length / 2;
     function startTimer() {
         timerInterval = setInterval(() => {
             seconds++;
@@ -213,8 +211,6 @@
     }
 
     startButton.addEventListener('click', () => {
-        score = 10;
-        scoreDisplay.textContent = score;
         startButton.style.display = 'none';
         gameBoard.style.display = 'grid';
         startTimer();
