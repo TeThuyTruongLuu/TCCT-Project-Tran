@@ -254,6 +254,14 @@
 		location.reload();
 	}
 
+	// Hàm để hiển thị bảng xếp hạng
+	window.viewLeaderboard = function viewLeaderboard() {
+		document.getElementById('result-panel').style.display = 'none';
+		document.querySelector('.leaderboard-container').style.display = 'block';
+		displayLeaderboard();
+	}
+
+
 	async function updateLeaderboard(name, time) {
 		try {
 			console.log("Updating leaderboard with:", name, time); // Kiểm tra giá trị được lưu vào Firestore
