@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matching Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            height: 100vh;
+            justify-content: center;
+        }
+        .score-board {
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 150px);
+            grid-gap: 10px;
+        }
+        .card {
+            width: 150px;
+            height: 150px;
+            position: relative;
+            cursor: pointer;
+            perspective: 1000px;
+        }
+        .card-inner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .card.flip .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 10px;
+        }
+        .card-back {
+            background-color: #00aaff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: white;
+        }
+        .card-front img {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+        }
+        .card-front {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body>
+
+<div class="score-board">Score: <span id="score">0</span></div>
+<div class="game-board">
+    <!-- Các thẻ sẽ được tạo thông qua JavaScript -->
+</div>
+
+<script>
+    // Tạo mảng chứa các cặp hình ảnh
+    const images = [
+        { img src="images/Cá Dụ 1.png", pairId: "Dụ" }, { img src="images/Dụ 2.png", pairId: "Dụ" },
+        { img src="images/Cáo Diệp 1.png", pairId: "Diệp" }, { img src="images/Diệp.png", pairId: "Diệp" },
+        { img src="images/Cáo tuyết Lam 1.png", pairId: "Lam" }, { src: "Lam.png", pairId: "Lam" },
+        { img src="images/Chuột Duệ 1.png", pairId: "Duệ" }, { img src="images/Duệ.png", pairId: "Duệ" },
+        { img src="images/Corgi Lư 1.png", pairId: "Lư" }, { img src="images/Lư.png", pairId: "Lư" },
+        { img src="images/Cụt Chu 1.png", pairId: "Chu" }, { img src="images/Chu.png", pairId: "Chu" },
+        { img src="images/Hamster Tranh 1.png", pairId: "Tranh" }, { img src="images/Tranh.png", pairId: "Tranh" },
+    ];
+
+    // Trộn các thẻ ngẫu nhiên
+    const gameGrid = images.sort(() => 0.5 - Math.random());
+    let firstCard = null;
+    let secondCard = null;
+    let canFlip = true;
+    let score = 0;
+
+    const gameBoard = document.querySelector('.game-board');
+    const scoreDisplay = document.getElementById('score');
+
+    // Tạo thẻ
+    gameGrid.forEach(item => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.dataset.pairId = item.pairId; // Dùng pairId để xác định cặp
+
+        const cardInner = document.createElement('div');
+        cardInner.classList.add('card-inner');
+
+        const cardFront = document.createElement('div');
+        cardFront.classList.add('card-front');
+        const img = document.createElement('img');
+        img.src = item.src;
+        cardFront.appendChild(img);
+
+        const cardBack = document.createElement('div');
+        cardBack.classList.add('card-back');
+        cardBack.textContent = "?";
+
+        cardInner.appendChild(cardFront);
+        cardInner.appendChild(cardBack);
+        card.appendChild(cardInner);
+        gameBoard.appendChild(card);
+
+        // Sự kiện lật thẻ
+        card.addEventListener('click', () => {
+            if (!canFlip || card.classList.contains('flip')) return;
+            card.classList.add('flip');
+
+            if (!firstCard) {
+                firstCard = card;
+            } else {
+                secondCard = card;
+                checkMatch();
+            }
+        });
+    });
+
+    // Kiểm tra xem hai thẻ có thuộc cùng một cặp không
+    function checkMatch() {
+        canFlip = false;
+        const isMatch = firstCard.dataset.pairId === secondCard.dataset.pairId;
+
+        if (isMatch) {
+            score += 10; // Cộng 10 điểm nếu ghép đúng
+            scoreDisplay.textContent = score;
+            resetCards(true);
+        } else {
+            setTimeout(() => resetCards(false), 1000);
+        }
+    }
+
+    // Đặt lại các thẻ
+    function resetCards(isMatch) {
+        if (!isMatch) {
+            firstCard.classList.remove('flip');
+            secondCard.classList.remove('flip');
+        }
+        firstCard = null;
+        secondCard = null;
+        canFlip = true;
+    }
+</script>
+
+</body>
+</html>
