@@ -44,13 +44,13 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 30px; /* Tăng kích thước */
-            border-radius: 16px; /* Bo tròn hơn */
-            background-color: #9D8DF1; /* Màu nền mới từ bảng màu */
+            padding: 60px; /* Tăng kích thước */
+            border-radius: 14px; /* Bo tròn hơn */
+            background-color: #FFFFFF; /* Màu nền mới từ bảng màu */
             box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 30%;
+            left: 30%;
             transform: translate(-50%, -50%);
             z-index: 10;
             color: #FFFFFF; /* Màu chữ */
@@ -58,7 +58,7 @@
         #login-modal h2 {
             font-size: 24px;
             margin-bottom: 15px;
-            color: #5A5766; /* Màu chữ tiêu đề từ bảng màu */
+            color: #1F271B; /* Màu chữ tiêu đề từ bảng màu */
         }
         #login-modal input {
             margin: 10px 0;
@@ -79,11 +79,8 @@
             border-radius: 8px;
             color: #5A5766; /* Màu chữ cho nút */
             transition: background-color 0.3s;
+			font-weight: bold;
         }
-        #start-button:hover {
-            background-color: #A9FBD7; /* Đổi màu khi hover */
-        }
-
         /* Thiết kế thẻ (card) */
         .card {
             width: 100%;
@@ -191,7 +188,7 @@
         const leaderboardElement = document.getElementById('leaderboard');
 
         // Âm thanh
-        const backgroundMusic = new Audio('musics/background.mp3');
+        const backgroundMusic = new Audio('musics/background music.m4a');
         const correctSound = new Audio('musics/right.m4a');
         const wrongSound = new Audio('musics/wrong.m4a');
 
@@ -253,20 +250,21 @@
         }
 
         // Kiểm tra mã và bắt đầu trò chơi
-        startButton.addEventListener('click', () => {
-            const codeInput = document.getElementById('code-input').value.trim();
-            const nicknameInput = document.getElementById('nickname-input').value.trim();
+		startButton.addEventListener('click', () => {
+			const codeInput = document.getElementById('code-input').value.trim();
+			const nicknameInput = document.getElementById('nickname-input').value.trim();
 
-            if (codeInput === "TCCT" && nicknameInput) {
-                document.getElementById('login-modal').style.display = 'none';
-                gameBoard.style.display = 'grid';
-                backgroundMusic.play(); // Bắt đầu nhạc nền khi bắt đầu trò chơi
-                startTimer();
-                displayLeaderboard();
-            } else {
-                alert("Invalid code or nickname. Please enter code 'TCCT' and a valid nickname.");
-            }
-        });
+			if (codeInput === "TCCT" && nicknameInput) {
+				document.getElementById('login-modal').style.display = 'none';
+				gameBoard.style.display = 'grid';
+				backgroundMusic.play(); // Bắt đầu nhạc nền khi bắt đầu trò chơi
+				startTimer();
+				displayLeaderboard();
+			} else {
+				alert("Invalid code or nickname. Please enter code 'TCCT' and a valid nickname.");
+			}
+		});
+
     </script>
     <script type="module">
         // Mã đã có trước đó
