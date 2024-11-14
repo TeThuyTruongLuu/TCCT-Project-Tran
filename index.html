@@ -102,9 +102,7 @@
 
 <div class="timer-board">Thời gian: <span id="timer">00:00</span></div>
 <button id="start-button">Bắt đầu</button>
-<div class="game-board">
-    <!-- Cards sẽ được tạo động bằng JavaScript -->
-</div>
+<div class="game-board"></div>
 <div class="leaderboard-container">
     <h3>Bảng xếp hạng</h3>
     <ul id="leaderboard"></ul>
@@ -115,30 +113,18 @@
     import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
     const firebaseConfig = {
-        apiKey: "AIzaSyDrRgPPldi8hy04k8aSy8r2wCy91RrgqUM",
+        apiKey: "AIzaSy...",
         authDomain: "tcct-project-tran.firebaseapp.com",
         projectId: "tcct-project-tran",
-        storageBucket: "tcct-project-tran.firebasestorage.app",
-        messagingSenderId: "826272441955",
-        appId: "1:826272441955:web:86a1f521ccee2e9d3e3a56",
-        measurementId: "G-D9EN3NEFD6"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    let seconds = 0;
-    let minutes = 0;
-    let timerInterval;
-    let firstCard = null;
-    let secondCard = null;
-    let canFlip = true;
-    let matchedPairs = 0;
-
-    const gameBoard = document.querySelector('.game-board');
     const startButton = document.getElementById('start-button');
+    const gameBoard = document.querySelector('.game-board');
     const timerDisplay = document.getElementById('timer');
-    const leaderboardElement = document.getElementById('leaderboard');
+    let firstCard, secondCard, canFlip = true, timerInterval;
 
     const images = [
         { src: "images/Cá Dụ 1.png", pairId: "Dụ" }, { src: "images/Dụ 2.png", pairId: "Dụ" },
@@ -149,10 +135,10 @@
         { src: "images/Cụt Chu 1.png", pairId: "Chu" }, { src: "images/Chu.png", pairId: "Chu" },
         { src: "images/Hamster Tranh 1.png", pairId: "Tranh" }, { src: "images/Tranh.png", pairId: "Tranh" },
     ];
-    const gameGrid = images.sort(() => 0.5 - Math.random());
-    const totalPairs = images.length / 2;
 
     function startTimer() {
+        let seconds = 0;
+        let minutes = 0;
         timerInterval = setInterval(() => {
             seconds++;
             if (seconds === 60) {
@@ -163,144 +149,57 @@
         }, 1000);
     }
 
-    function stopTimer() {
-        clearInterval(timerInterval);
-    }
+    function initializeGame() {
+        gameBoard.innerHTML = '';  // Clear existing cards
+        images.sort(() => 0.5 - Math.random());  // Shuffle cards
+        images.forEach((img) => {
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.dataset.pairId = img.pairId;
+            const cardInner = document.createElement('div');
+            cardInner.classList.add('card-inner');
+            const cardFront = document.createElement('div');
+            cardFront.classList.add('card-front');
+            const cardBack = document.createElement('div');
+            cardBack.classList.add('card-back');
+            const imgElement = document.createElement('img');
+            imgElement.src = img.src;
+            cardFront.appendChild(imgElement);
+            cardInner.appendChild(cardFront);
+            cardInner.appendChild(cardBack);
+            card.appendChild(cardInner);
+            gameBoard.appendChild(card);
 
-	function showFinalScore() {
-		stopTimer();
-		const totalTime = minutes + seconds / 60;
-		const finalScore = Math.max(0, 10 - totalTime).toFixed(2);
-
-		// Yêu cầu người chơi nhập tên
-		const playerName = prompt(`Kết thúc trò chơi! Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}\nĐiểm: ${finalScore}\nVui lòng nhập tên của bạn:`);
-
-		if (playerName) {
-			updateLeaderboard(playerName, totalTime);
-		} else {
-			alert("Bạn đã không nhập tên. Điểm sẽ không được lưu vào bảng xếp hạng.");
-		}
-	}
-
-	async function updateLeaderboard(playerName, completionTime) {
-		try {
-			await addDoc(collection(db, "leaderboard"), { name: playerName, time: completionTime });
-			displayLeaderboard();
-		} catch (e) {
-			console.error("Error adding document: ", e);
-		}
-	}
-
-	async function displayLeaderboard() {
-		const leaderboard = await getLeaderboard();
-		leaderboardElement.innerHTML = '';
-		leaderboard.forEach(({ name, time }, index) => {
-			const li = document.createElement('li');
-			li.textContent = `#${index + 1}: ${name} - ${time.toFixed(2)} minutes`;
-			leaderboardElement.appendChild(li);
-		});
-	}
-
-	async function getLeaderboard() {
-		const leaderboard = [];
-		const leaderboardQuery = query(collection(db, "leaderboard"), orderBy("time", "asc"), limit(5));
-		const querySnapshot = await getDocs(leaderboardQuery);
-		querySnapshot.forEach((doc) => {
-			leaderboard.push(doc.data());
-		});
-		return leaderboard;
-	}
-
-
-    async function updateLeaderboard(completionTime) {
-        try {
-            await addDoc(collection(db, "leaderboard"), { time: completionTime });
-            displayLeaderboard();
-        } catch (e) {
-            console.error("Error adding document: ", e);
-        }
-    }
-
-    async function displayLeaderboard() {
-        const leaderboard = await getLeaderboard();
-        leaderboardElement.innerHTML = '';
-        leaderboard.forEach((time, index) => {
-            const li = document.createElement('li');
-            li.textContent = `#${index + 1}: ${time.toFixed(2)} minutes`;
-            leaderboardElement.appendChild(li);
+            card.addEventListener('click', () => handleCardFlip(card));
         });
     }
 
-	startButton.addEventListener('click', () => {
-		startButton.style.display = 'none';
-		gameBoard.style.display = 'grid';
-		startTimer();
-		displayLeaderboard();
-	});
+    function handleCardFlip(card) {
+        if (!canFlip || card.classList.contains('flip')) return;
+        card.classList.add('flip');
+        firstCard ? (secondCard = card) : (firstCard = card);
+        if (secondCard) checkMatch();
+    }
 
-
-    gameGrid.forEach(item => {
-        const card = document.createElement('div');
-        card.classList.add('card');
-        card.dataset.pairId = item.pairId;
-
-        const cardInner = document.createElement('div');
-        cardInner.classList.add('card-inner');
-
-        const cardFront = document.createElement('div');
-        cardFront.classList.add('card-front');
-        const img = document.createElement('img');
-        img.src = item.src;
-        cardFront.appendChild(img);
-
-        const cardBack = document.createElement('div');
-        cardBack.classList.add('card-back');
-
-        cardInner.appendChild(cardFront);
-        cardInner.appendChild(cardBack);
-        card.appendChild(cardInner);
-        gameBoard.appendChild(card);
-
-        card.addEventListener('click', () => {
-            if (!canFlip || card.classList.contains('flip')) return;
-            card.classList.add('flip');
-
-            if (!firstCard) {
-                firstCard = card;
-            } else {
-                secondCard = card;
-                checkMatch();
+    function checkMatch() {
+        canFlip = false;
+        const match = firstCard.dataset.pairId === secondCard.dataset.pairId;
+        setTimeout(() => {
+            if (!match) {
+                firstCard.classList.remove('flip');
+                secondCard.classList.remove('flip');
             }
-        });
-    });
-
-	function checkMatch() {
-		canFlip = false;
-		const isMatch = firstCard.dataset.pairId === secondCard.dataset.pairId;
-
-		if (isMatch) {
-			matchedPairs++;
-			resetCards(true);
-
-			// Kiểm tra sau khi resetCards
-			if (matchedPairs === totalPairs) {
-				setTimeout(showFinalScore, 500);  // Để thời gian 500ms trước khi hiện điểm
-			}
-		} else {
-			setTimeout(() => resetCards(false), 1000);
-		}
-	}
-	
-    function resetCards(isMatch) {
-        if (!isMatch) {
-            firstCard.classList.remove('flip');
-            secondCard.classList.remove('flip');
-        }
-        firstCard = null;
-        secondCard = null;
-        canFlip = true;
+            firstCard = secondCard = null;
+            canFlip = true;
+        }, match ? 0 : 1000);
     }
-</script>
 
+    startButton.addEventListener('click', () => {
+        startButton.style.display = 'none';
+        gameBoard.style.display = 'grid';
+        startTimer();
+        initializeGame();
+    });
+</script>
 </body>
 </html>
