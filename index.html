@@ -49,8 +49,8 @@
             background-color: #FFFFFF; /* Màu nền mới từ bảng màu */
             box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
             position: absolute;
-            top: 30%;
-            left: 30%;
+            top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
             z-index: 10;
             color: #FFFFFF; /* Màu chữ */
@@ -67,7 +67,7 @@
             border: 1px solid #A9FBD7; /* Viền theo bảng màu */
             border-radius: 8px;
             width: 100%;
-            max-width: 250px;
+            max-width: 350px;
             box-sizing: border-box;
         }
         #start-button {
@@ -152,194 +152,192 @@
     <div class="game-board">
         <!-- Cards sẽ được tạo động bằng JavaScript -->
     </div>
-    <div class="leaderboard-container">
+    <div class="leaderboard-container" style="display: none;">
         <h3>Bảng xếp hạng</h3>
         <ul id="leaderboard"></ul>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+ <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDrRgPPldi8hy04k8aSy8r2wCy91RrgqUM",
-            authDomain: "tcct-project-tran.firebaseapp.com",
-            projectId: "tcct-project-tran",
-            storageBucket: "tcct-project-tran.firebasestorage.app",
-            messagingSenderId: "826272441955",
-            appId: "1:826272441955:web:86a1f521ccee2e9d3e3a56",
-            measurementId: "G-D9EN3NEFD6"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyDrRgPPldi8hy04k8aSy8r2wCy91RrgqUM",
+        authDomain: "tcct-project-tran.firebaseapp.com",
+        projectId: "tcct-project-tran",
+        storageBucket: "tcct-project-tran.firebasestorage.app",
+        messagingSenderId: "826272441955",
+        appId: "1:826272441955:web:86a1f521ccee2e9d3e3a56",
+        measurementId: "G-D9EN3NEFD6"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-        let seconds = 0;
-        let minutes = 0;
-        let timerInterval;
-        let firstCard = null;
-        let secondCard = null;
-        let canFlip = true;
-        let matchedPairs = 0;
+    let seconds = 0;
+    let minutes = 0;
+    let timerInterval;
+    let firstCard = null;
+    let secondCard = null;
+    let canFlip = true;
+    let matchedPairs = 0;
 
-        const gameBoard = document.querySelector('.game-board');
-        const startButton = document.getElementById('start-button');
-        const timerDisplay = document.getElementById('timer');
-        const leaderboardElement = document.getElementById('leaderboard');
-		
-	    const images = [
-            { src: "images/Cá Dụ 1.png", pairId: "Dụ" }, { src: "images/Dụ 2.png", pairId: "Dụ" },
-            { src: "images/Cáo Diệp 1.png", pairId: "Diệp" }, { src: "images/Diệp.png", pairId: "Diệp" },
-        ];
-        const gameGrid = images.sort(() => 0.5 - Math.random());
-        const totalPairs = images.length / 2;
+    const gameBoard = document.querySelector('.game-board');
+    const startButton = document.getElementById('start-button');
+    const timerDisplay = document.getElementById('timer');
+    const leaderboardElement = document.getElementById('leaderboard');
+    
+    const images = [
+        { src: "images/Cá Dụ 1.png", pairId: "Dụ" }, { src: "images/Dụ 2.png", pairId: "Dụ" },
+        { src: "images/Cáo Diệp 1.png", pairId: "Diệp" }, { src: "images/Diệp.png", pairId: "Diệp" },
+    ];
+    const gameGrid = images.sort(() => 0.5 - Math.random());
+    const totalPairs = images.length / 2;
 
-        // Âm thanh
-        const backgroundMusic = new Audio('musics/background music.m4a');
-        const correctSound = new Audio('musics/right.m4a');
-        const wrongSound = new Audio('musics/wrong.m4a');
+    // Âm thanh
+    const backgroundMusic = new Audio('musics/background music.m4a');
+    const correctSound = new Audio('musics/right.m4a');
+    const wrongSound = new Audio('musics/wrong.m4a');
 
-        // Bắt đầu âm thanh nền
-        backgroundMusic.loop = true;
-        backgroundMusic.volume = 0.2; // Giảm âm lượng để không gây khó chịu cho người nghe
-
-        function startTimer() {
-            timerInterval = setInterval(() => {
-                seconds++;
-                if (seconds === 60) {
-                    seconds = 0;
-                    minutes++;
-                }
-                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            }, 1000);
-        }
-
-        function stopTimer() {
-            clearInterval(timerInterval);
-            backgroundMusic.pause(); // Dừng nhạc nền khi dừng trò chơi
-        }
-
-        async function updateLeaderboard(nickname, completionTime) {
-            try {
-                await addDoc(collection(db, "leaderboard"), { name: nickname, time: completionTime });
-                displayLeaderboard();
-            } catch (e) {
-                console.error("Error adding document: ", e);
+    // Bắt đầu âm thanh nền
+    backgroundMusic.loop = true;
+    backgroundMusic.volume = 0.2; // Giảm âm lượng để không gây khó chịu cho người nghe
+    
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            seconds++;
+            if (seconds === 60) {
+                seconds = 0;
+                minutes++;
             }
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+        backgroundMusic.pause(); // Dừng nhạc nền khi dừng trò chơi
+    }
+
+    async function updateLeaderboard(nickname, completionTime) {
+        try {
+            await addDoc(collection(db, "leaderboard"), { name: nickname, time: completionTime });
+            displayLeaderboard();
+        } catch (e) {
+            console.error("Error adding document: ", e);
         }
+    }
 
-        // Hiển thị bảng xếp hạng
-        async function displayLeaderboard() {
-            try {
-                const leaderboard = [];
-                const leaderboardQuery = query(collection(db, "leaderboard"), orderBy("time", "asc"), limit(5));
-                const querySnapshot = await getDocs(leaderboardQuery);
-                querySnapshot.forEach((doc) => { leaderboard.push(doc.data()); });
+    // Hiển thị bảng xếp hạng
+    async function displayLeaderboard() {
+        try {
+            const leaderboard = [];
+            const leaderboardQuery = query(collection(db, "leaderboard"), orderBy("time", "asc"), limit(5));
+            const querySnapshot = await getDocs(leaderboardQuery);
+            querySnapshot.forEach((doc) => { leaderboard.push(doc.data()); });
 
-                leaderboardElement.innerHTML = '';
-                leaderboard.forEach(({ name, time }, index) => {
-                    const li = document.createElement('li');
-                    li.textContent = `#${index + 1}: ${name} - ${time.toFixed(2)} minutes`;
-                    leaderboardElement.appendChild(li);
-                });
-            } catch (e) {
-                console.error("Error fetching leaderboard: ", e);
-                leaderboardElement.innerHTML = '<li>Không thể tải bảng xếp hạng</li>';
-            }
-        }
-
-        async function showFinalScore() {
-            stopTimer();
-            const totalTime = minutes + seconds / 60;
-            const nicknameInput = document.getElementById('nickname-input').value.trim();
-            await updateLeaderboard(nicknameInput, totalTime);
-            alert(`Kết thúc trò chơi! Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}\nĐiểm của bạn đã được lưu.`);
-        }
-
-        // Kiểm tra mã và bắt đầu trò chơi
-		startButton.addEventListener('click', () => {
-			const codeInput = document.getElementById('code-input').value.trim();
-			const nicknameInput = document.getElementById('nickname-input').value.trim();
-
-			if (codeInput === "TCCT" && nicknameInput) {
-				document.getElementById('login-modal').style.display = 'none';
-				gameBoard.style.display = 'grid';
-				backgroundMusic.play(); // Bắt đầu nhạc nền khi bắt đầu trò chơi
-				startTimer();
-				displayLeaderboard();
-			} else {
-				alert("Invalid code or nickname. Please enter code 'TCCT' and a valid nickname.");
-			}
-		});
-
-    </script>
-    <script type="module">
-
-        // Khởi tạo thẻ
-        gameGrid.forEach(item => {
-            const card = document.createElement('div');
-            card.classList.add('card');
-            card.dataset.pairId = item.pairId;
-
-            const cardInner = document.createElement('div');
-            cardInner.classList.add('card-inner');
-
-            const cardFront = document.createElement('div');
-            cardFront.classList.add('card-front');
-            const img = document.createElement('img');
-            img.src = item.src;
-            cardFront.appendChild(img);
-
-            const cardBack = document.createElement('div');
-            cardBack.classList.add('card-back');
-
-            cardInner.appendChild(cardFront);
-            cardInner.appendChild(cardBack);
-            card.appendChild(cardInner);
-            gameBoard.appendChild(card);
-
-            card.addEventListener('click', () => {
-                if (!canFlip || card.classList.contains('flip')) return;
-                card.classList.add('flip');
-
-                if (!firstCard) {
-                    firstCard = card;
-                } else {
-                    secondCard = card;
-                    checkMatch();
-                }
+            leaderboardElement.innerHTML = '';
+            leaderboard.forEach(({ name, time }, index) => {
+                const li = document.createElement('li');
+                li.textContent = `#${index + 1}: ${name} - ${time.toFixed(2)} minutes`;
+                leaderboardElement.appendChild(li);
             });
-        });
+        } catch (e) {
+            console.error("Error fetching leaderboard: ", e);
+            leaderboardElement.innerHTML = '<li>Không thể tải bảng xếp hạng</li>';
+        }
+    }
 
-        // Kiểm tra ghép cặp
-        function checkMatch() {
-            canFlip = false;
-            const isMatch = firstCard.dataset.pairId === secondCard.dataset.pairId;
+    async function showFinalScore() {
+        stopTimer();
+        const totalTime = minutes + seconds / 60;
+        const nicknameInput = document.getElementById('nickname-input').value.trim();
+        await updateLeaderboard(nicknameInput, totalTime);
+        alert(`Kết thúc trò chơi! Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}\nĐiểm của bạn đã được lưu.`);
+        document.querySelector('.leaderboard-container').style.display = 'block';
+        displayLeaderboard();
+    }
 
-            if (isMatch) {
-                matchedPairs++;
-                correctSound.play(); // Phát âm thanh khi đoán đúng
-                resetCards(true);
+    // Kiểm tra mã và bắt đầu trò chơi
+    startButton.addEventListener('click', () => {
+        const codeInput = document.getElementById('code-input').value.trim();
+        const nicknameInput = document.getElementById('nickname-input').value.trim();
 
-                if (matchedPairs === totalPairs) {
-                    setTimeout(showFinalScore, 500);
-                }
+        if (codeInput === "TCCT" && nicknameInput) {
+            document.getElementById('login-modal').style.display = 'none';
+            gameBoard.style.display = 'grid';
+            backgroundMusic.play(); // Bắt đầu nhạc nền khi bắt đầu trò chơi
+            startTimer();
+        } else {
+            alert("Invalid code or nickname. Please enter code 'TCCT' and a valid nickname.");
+        }
+    });
+
+    // Khởi tạo thẻ
+    gameGrid.forEach(item => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.dataset.pairId = item.pairId;
+
+        const cardInner = document.createElement('div');
+        cardInner.classList.add('card-inner');
+
+        const cardFront = document.createElement('div');
+        cardFront.classList.add('card-front');
+        const img = document.createElement('img');
+        img.src = item.src;
+        cardFront.appendChild(img);
+
+        const cardBack = document.createElement('div');
+        cardBack.classList.add('card-back');
+
+        cardInner.appendChild(cardFront);
+        cardInner.appendChild(cardBack);
+        card.appendChild(cardInner);
+        gameBoard.appendChild(card);
+
+        card.addEventListener('click', () => {
+            if (!canFlip || card.classList.contains('flip')) return;
+            card.classList.add('flip');
+
+            if (!firstCard) {
+                firstCard = card;
             } else {
-                wrongSound.play(); // Phát âm thanh khi đoán sai
-                setTimeout(() => resetCards(false), 1000);
+                secondCard = card;
+                checkMatch();
             }
-        }
+        });
+    });
 
-        // Đặt lại thẻ
-        function resetCards(isMatch) {
-            if (!isMatch) {
-                firstCard.classList.remove('flip');
-                secondCard.classList.remove('flip');
+    // Kiểm tra ghép cặp
+    function checkMatch() {
+        canFlip = false;
+        const isMatch = firstCard.dataset.pairId === secondCard.dataset.pairId;
+
+        if (isMatch) {
+            matchedPairs++;
+            correctSound.play(); // Phát âm thanh khi đoán đúng
+            resetCards(true);
+
+            if (matchedPairs === totalPairs) {
+                setTimeout(showFinalScore, 500);
             }
-            firstCard = null;
-            secondCard = null;
-            canFlip = true;
+        } else {
+            wrongSound.play(); // Phát âm thanh khi đoán sai
+            setTimeout(() => resetCards(false), 1000);
         }
-    </script>
+    }
+
+    // Đặt lại thẻ
+    function resetCards(isMatch) {
+        if (!isMatch) {
+            firstCard.classList.remove('flip');
+            secondCard.classList.remove('flip');
+        }
+        firstCard = null;
+        secondCard = null;
+        canFlip = true;
+    }
+</script>
 </body>
 </html>
