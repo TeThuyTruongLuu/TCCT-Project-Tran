@@ -193,7 +193,73 @@
             canFlip = true;
         }, match ? 0 : 1000);
     }
+    function stopTimer() {
+        clearInterval(timerInterval);
+    }
 
+	function showFinalScore() {
+		stopTimer();
+		const totalTime = minutes + seconds / 60;
+		const finalScore = Math.max(0, 10 - totalTime).toFixed(2);
+
+		// Yêu cầu người chơi nhập tên
+		const playerName = prompt(`Kết thúc trò chơi! Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}\nĐiểm: ${finalScore}\nVui lòng nhập tên của bạn:`);
+
+		if (playerName) {
+			updateLeaderboard(playerName, totalTime);
+		} else {
+			alert("Bạn đã không nhập tên. Điểm sẽ không được lưu vào bảng xếp hạng.");
+		}
+	}
+
+	async function updateLeaderboard(playerName, completionTime) {
+		try {
+			await addDoc(collection(db, "leaderboard"), { name: playerName, time: completionTime });
+			displayLeaderboard();
+		} catch (e) {
+			console.error("Error adding document: ", e);
+		}
+	}
+
+	async function displayLeaderboard() {
+		const leaderboard = await getLeaderboard();
+		leaderboardElement.innerHTML = '';
+		leaderboard.forEach(({ name, time }, index) => {
+			const li = document.createElement('li');
+			li.textContent = `#${index + 1}: ${name} - ${time.toFixed(2)} minutes`;
+			leaderboardElement.appendChild(li);
+		});
+	}
+
+	async function getLeaderboard() {
+		const leaderboard = [];
+		const leaderboardQuery = query(collection(db, "leaderboard"), orderBy("time", "asc"), limit(5));
+		const querySnapshot = await getDocs(leaderboardQuery);
+		querySnapshot.forEach((doc) => {
+			leaderboard.push(doc.data());
+		});
+		return leaderboard;
+	}
+
+
+    async function updateLeaderboard(completionTime) {
+        try {
+            await addDoc(collection(db, "leaderboard"), { time: completionTime });
+            displayLeaderboard();
+        } catch (e) {
+            console.error("Error adding document: ", e);
+        }
+    }
+
+    async function displayLeaderboard() {
+        const leaderboard = await getLeaderboard();
+        leaderboardElement.innerHTML = '';
+        leaderboard.forEach((time, index) => {
+            const li = document.createElement('li');
+            li.textContent = `#${index + 1}: ${time.toFixed(2)} minutes`;
+            leaderboardElement.appendChild(li);
+        });
+    }
     startButton.addEventListener('click', () => {
         startButton.style.display = 'none';
         gameBoard.style.display = 'grid';
