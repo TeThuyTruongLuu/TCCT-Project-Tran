@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matching Game</title>
     <style>
+        /* Các style của giao diện trò chơi */
         body {
             display: flex;
             flex-direction: column;
@@ -64,8 +65,7 @@
             border-radius: 10px;
         }
         .card-back {
-            background-image: url('images/Cá Dụ 1.png');
-            background-size: cover;
+            background-color: #007bff;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -96,23 +96,6 @@
             font-size: 18px;
             margin: 5px 0;
         }
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            .game-board {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-        @media (max-width: 400px) {
-            .game-board {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .score-board, .timer-board, .leaderboard-container {
-                font-size: 20px;
-            }
-            .card-back {
-                font-size: 18px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -121,7 +104,7 @@
 <div class="score-board">Điểm: <span id="score">0</span></div>
 <button id="start-button">Bắt đầu</button>
 <div class="game-board">
-    <!-- Cards will be created dynamically using JavaScript -->
+    <!-- Cards sẽ được tạo động bằng JavaScript -->
 </div>
 <div class="leaderboard-container">
     <h3>Bảng xếp hạng</h3>
@@ -129,11 +112,11 @@
 </div>
 
 <script type="module">
-    // Import Firebase modules
+    // Import các module Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    // Firebase configuration
+    // Cấu hình Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyDrRgPPldi8hy04k8aSy8r2wCy91RrgqUM",
         authDomain: "tcct-project-tran.firebaseapp.com",
@@ -144,12 +127,12 @@
         measurementId: "G-D9EN3NEFD6"
     };
 
-    // Initialize Firebase
+    // Khởi tạo Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Game variables
-    let score = 100;
+    // Biến game
+    let score = 10;
     let seconds = 0;
     let minutes = 0;
     let timerInterval;
@@ -165,7 +148,7 @@
     const timerDisplay = document.getElementById('timer');
     const leaderboardElement = document.getElementById('leaderboard');
 
-    // Initialize the game board
+    // Tạo mảng các cặp ảnh
     const images = [
         { src: "images/Cá Dụ 1.png", pairId: "Dụ" }, { src: "images/Dụ 2.png", pairId: "Dụ" },
         { src: "images/Cáo Diệp 1.png", pairId: "Diệp" }, { src: "images/Diệp.png", pairId: "Diệp" },
@@ -194,9 +177,10 @@
 
     function showFinalScore() {
         stopTimer();
-        const finalTime = minutes * 60 + seconds;
-        updateLeaderboard(finalTime);
-        alert(`Kết thúc trò chơi! Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}\nĐiểm: ${score}`);
+        const totalTime = minutes + seconds / 60;
+        const finalScore = Math.max(0, 10 - totalTime).toFixed(2);
+        alert(`Kết thúc trò chơi! Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}\nĐiểm: ${finalScore}`);
+        updateLeaderboard(totalTime);
     }
 
     async function getLeaderboard() {
@@ -223,13 +207,13 @@
         leaderboardElement.innerHTML = '';
         leaderboard.forEach((time, index) => {
             const li = document.createElement('li');
-            li.textContent = `#${index + 1}: ${time} seconds`;
+            li.textContent = `#${index + 1}: ${time.toFixed(2)} minutes`;
             leaderboardElement.appendChild(li);
         });
     }
 
     startButton.addEventListener('click', () => {
-        score = 100;
+        score = 10;
         scoreDisplay.textContent = score;
         startButton.style.display = 'none';
         gameBoard.style.display = 'grid';
