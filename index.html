@@ -178,18 +178,13 @@
         clearInterval(timerInterval);
     }
 
-	function showFinalScore() {
+	async function showFinalScore() {
 		stopTimer();
 		const totalTime = minutes + seconds / 60;
 		const finalScore = Math.max(0, 10 - totalTime).toFixed(2);
+		const playerName = prompt(`Kết thúc trò chơi! Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}\nĐiểm: ${finalScore}\nVui lòng nhập tên của bạn:`) || "Player";
 
-		const playerName = prompt(`Kết thúc trò chơi! Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}\nĐiểm: ${finalScore}\nVui lòng nhập tên của bạn:`);
-
-		if (playerName) {
-			updateLeaderboard(playerName, totalTime);
-		} else {
-			alert("Bạn đã không nhập tên. Điểm sẽ không được lưu vào bảng xếp hạng.");
-		}
+		await updateLeaderboard(playerName, totalTime);
 	}
 
 	async function updateLeaderboard(playerName, completionTime) {
@@ -202,19 +197,24 @@
 	}
 
 	async function displayLeaderboard() {
-		const leaderboard = [];
-		const leaderboardQuery = query(collection(db, "leaderboard"), orderBy("time", "asc"), limit(5));
-		const querySnapshot = await getDocs(leaderboardQuery);
-		querySnapshot.forEach((doc) => {
-			leaderboard.push(doc.data());
-		});
+		try {
+			const leaderboard = [];
+			const leaderboardQuery = query(collection(db, "leaderboard"), orderBy("time", "asc"), limit(5));
+			const querySnapshot = await getDocs(leaderboardQuery);
+			querySnapshot.forEach((doc) => {
+				leaderboard.push(doc.data());
+			});
 
-		leaderboardElement.innerHTML = '';
-		leaderboard.forEach(({ name, time }, index) => {
-			const li = document.createElement('li');
-			li.textContent = `#${index + 1}: ${name} - ${time.toFixed(2)} minutes`;
-			leaderboardElement.appendChild(li);
-		});
+			leaderboardElement.innerHTML = '';
+			leaderboard.forEach(({ name, time }, index) => {
+				const li = document.createElement('li');
+				li.textContent = `#${index + 1}: ${name} - ${time.toFixed(2)} minutes`;
+				leaderboardElement.appendChild(li);
+			});
+		} catch (e) {
+			console.error("Error fetching leaderboard: ", e);
+			leaderboardElement.innerHTML = '<li>Không thể tải bảng xếp hạng</li>';
+		}
 	}
 
 	// Gọi `displayLeaderboard()` khi tải trang để hiển thị bảng xếp hạng hiện có
