@@ -250,12 +250,12 @@
 	}
 
 	// Hàm để khởi động lại trò chơi
-	function restartGame() {
+	window.restartGame = function restartGame() {
 		location.reload();
 	}
 
 	// Hàm để hiển thị bảng xếp hạng
-	function viewLeaderboard() {
+	window.viewLeaderboard = function viewLeaderboard() {
 		document.getElementById('result-panel').style.display = 'none';
 		document.querySelector('.leaderboard-container').style.display = 'block';
 		displayLeaderboard();
