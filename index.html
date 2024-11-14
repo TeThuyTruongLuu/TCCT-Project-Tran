@@ -216,7 +216,7 @@
 
     function stopTimer() {
         clearInterval(timerInterval);
-        backgroundMusic.pause(); // Dừng nhạc nền khi dừng trò chơi
+        //backgroundMusic.pause(); // Dừng nhạc nền khi dừng trò chơi
     }
 
     async function updateLeaderboard(nickname, completionTime) {
@@ -229,34 +229,45 @@
     }
 
     // Hiển thị bảng xếp hạng
-    async function displayLeaderboard() {
-        try {
-            const leaderboard = [];
-            const leaderboardQuery = query(collection(db, "leaderboard"), orderBy("time", "asc"), limit(5));
-            const querySnapshot = await getDocs(leaderboardQuery);
-            querySnapshot.forEach((doc) => { leaderboard.push(doc.data()); });
+	async function showFinalScore() {
+		stopTimer();
+		const totalTime = minutes + seconds / 60;
+		const finalScore = Math.max(0, 10 - totalTime).toFixed(2);
+		const nicknameInput = document.getElementById('nickname-input').value.trim();
 
-            leaderboardElement.innerHTML = '';
-            leaderboard.forEach(({ name, time }, index) => {
-                const li = document.createElement('li');
-                li.textContent = `#${index + 1}: ${name} - ${time.toFixed(2)} minutes`;
-                leaderboardElement.appendChild(li);
-            });
-        } catch (e) {
-            console.error("Error fetching leaderboard: ", e);
-            leaderboardElement.innerHTML = '<li>Không thể tải bảng xếp hạng</li>';
-        }
-    }
+		console.log(`Nickname: ${nicknameInput}, Time: ${totalTime}`); // Kiểm tra dữ liệu trước khi cập nhật
 
-    async function showFinalScore() {
-        stopTimer();
-        const totalTime = minutes + seconds / 60;
-        const nicknameInput = document.getElementById('nickname-input').value.trim();
-        await updateLeaderboard(nicknameInput, totalTime);
-        alert(`Kết thúc trò chơi! Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}\nĐiểm của bạn đã được lưu.`);
-        document.querySelector('.leaderboard-container').style.display = 'block';
-        displayLeaderboard();
-    }
+		// Cập nhật điểm của người chơi vào Firestore
+		await updateLeaderboard(nicknameInput, totalTime);
+
+		// Kiểm tra xem bảng xếp hạng có được hiển thị đúng không
+		alert(`Kết thúc trò chơi! Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}\nĐiểm: ${finalScore}`);
+		document.querySelector('.leaderboard-container').style.display = 'block';
+		
+		// Hiển thị bảng xếp hạng sau khi cập nhật
+		displayLeaderboard();
+	}
+
+	async function displayLeaderboard() {
+		try {
+			const leaderboard = [];
+			const leaderboardQuery = query(collection(db, "leaderboard"), orderBy("time", "asc"), limit(5));
+			const querySnapshot = await getDocs(leaderboardQuery);
+			querySnapshot.forEach((doc) => { leaderboard.push(doc.data()); });
+
+			console.log("Leaderboard data:", leaderboard); // Kiểm tra dữ liệu bảng xếp hạng
+
+			leaderboardElement.innerHTML = '';
+			leaderboard.forEach(({ name, time }, index) => {
+				const li = document.createElement('li');
+				li.textContent = `#${index + 1}: ${name} - ${time.toFixed(2)} minutes`;
+				leaderboardElement.appendChild(li);
+			});
+		} catch (e) {
+			console.error("Error fetching leaderboard: ", e);
+			leaderboardElement.innerHTML = '<li>Không thể tải bảng xếp hạng</li>';
+		}
+	}
 
     // Kiểm tra mã và bắt đầu trò chơi
     startButton.addEventListener('click', () => {
