@@ -156,6 +156,17 @@
         <h3>Bảng xếp hạng</h3>
         <ul id="leaderboard"></ul>
     </div>
+	<div id="result-panel" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px; background-color: #FFFFFF; border-radius: 10px; box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);">
+		<h2>Kết thúc trò chơi!</h2>
+		<p id="result-player-name"></p>
+		<p id="result-time"></p>
+		<p id="result-score"></p>
+		<div style="display: flex; gap: 10px; justify-content: center;">
+			<button onclick="restartGame()" style="padding: 10px 20px; font-size: 16px; background-color: #A9FBD7; border: none; border-radius: 8px; cursor: pointer;">Thử lại</button>
+			<button onclick="viewLeaderboard()" style="padding: 10px 20px; font-size: 16px; background-color: #F6D0B1; border: none; border-radius: 8px; cursor: pointer;">Xem bảng xếp hạng</button>
+		</div>
+	</div>
+
 
  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
@@ -173,7 +184,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
+	let playerName = "";
     let seconds = 0;
     let minutes = 0;
     let timerInterval;
@@ -225,36 +236,60 @@
 		const totalTime = (minutes + seconds / 60).toFixed(2);
 		const finalScore = Math.max(0, 10 - totalTime).toFixed(1);
 
-		// Sử dụng `playerName` đã lưu để hiển thị thông báo kết quả
-		alert(`Kết thúc trò chơi! Tên người chơi: ${playerName}\nThời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}\nĐiểm: ${finalScore}`);
+		// Cập nhật nội dung của panel kết quả
+		document.getElementById('result-player-name').textContent = `Tên người chơi: ${playerName}`;
+		document.getElementById('result-time').textContent = `Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+		document.getElementById('result-score').textContent = `Điểm: ${finalScore}`;
 
-		// Hiển thị bảng xếp hạng sau khi người chơi hoàn thành trò chơi
-		document.querySelector('.leaderboard-container').style.display = 'block';
-		
-		// Cập nhật bảng xếp hạng sau khi nhập tên
+		// Hiển thị panel kết quả
+		document.getElementById('result-panel').style.display = 'block';
+
+		// Cập nhật bảng xếp hạng
 		updateLeaderboard(playerName, totalTime);
 		displayLeaderboard();
 	}
+
+	// Hàm để khởi động lại trò chơi
+	function restartGame() {
+		location.reload();
+	}
+
+	// Hàm để hiển thị bảng xếp hạng
+	function viewLeaderboard() {
+		document.getElementById('result-panel').style.display = 'none';
+		document.querySelector('.leaderboard-container').style.display = 'block';
+		displayLeaderboard();
+	}
+
 
 	async function displayLeaderboard() {
 		try {
 			const leaderboard = [];
 			const leaderboardQuery = query(collection(db, "leaderboard"), orderBy("time", "asc"), limit(5));
 			const querySnapshot = await getDocs(leaderboardQuery);
-			querySnapshot.forEach((doc) => { leaderboard.push(doc.data()); });
 
-			console.log("Leaderboard data:", leaderboard); // Kiểm tra dữ liệu bảng xếp hạng
-
-			if (!leaderboardElement) {
-				console.error("leaderboardElement is not found in the DOM.");
+			// Kiểm tra nếu không có dữ liệu
+			if (querySnapshot.empty) {
+				console.log("No data found in leaderboard.");
+				leaderboardElement.innerHTML = '<li>Chưa có dữ liệu trong bảng xếp hạng</li>';
 				return;
 			}
 
-			leaderboardElement.innerHTML = '';
+			// Lấy dữ liệu và kiểm tra dữ liệu
+			querySnapshot.forEach((doc) => {
+				const data = doc.data();
+				if (typeof data.time === 'string') {
+					data.time = parseFloat(data.time); // Chuyển chuỗi sang số nếu cần
+				}
+				leaderboard.push(data);
+			});
+
+			console.log("Leaderboard data:", leaderboard); // Kiểm tra dữ liệu bảng xếp hạng
+
+			leaderboardElement.innerHTML = ''; // Xóa nội dung cũ
 			leaderboard.forEach(({ name, time }, index) => {
 				const li = document.createElement('li');
-				// Chuyển đổi `time` thành số trước khi dùng `toFixed`
-				li.textContent = `#${index + 1}: ${name} - ${parseFloat(time).toFixed(2)} minutes`;
+				li.textContent = `#${index + 1}: ${name} - ${time.toFixed(2)} minutes`;
 				leaderboardElement.appendChild(li);
 			});
 		} catch (e) {
@@ -263,12 +298,15 @@
 		}
 	}
 
+
     // Kiểm tra mã và bắt đầu trò chơi
     startButton.addEventListener('click', () => {
         const codeInput = document.getElementById('code-input').value.trim();
         const nicknameInput = document.getElementById('nickname-input').value.trim();
 
         if (codeInput === "TCCT" && nicknameInput) {
+			playerName = nicknameInput;
+			
             document.getElementById('login-modal').style.display = 'none';
             gameBoard.style.display = 'grid';
             backgroundMusic.play(); // Bắt đầu nhạc nền khi bắt đầu trò chơi
