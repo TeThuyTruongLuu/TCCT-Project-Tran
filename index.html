@@ -219,32 +219,20 @@
         //backgroundMusic.pause(); // Dừng nhạc nền khi dừng trò chơi
     }
 
-    async function updateLeaderboard(nickname, completionTime) {
-        try {
-            await addDoc(collection(db, "leaderboard"), { name: nickname, time: completionTime });
-            displayLeaderboard();
-        } catch (e) {
-            console.error("Error adding document: ", e);
-        }
-    }
-
     // Hiển thị bảng xếp hạng
-	async function showFinalScore() {
+	function showFinalScore() {
 		stopTimer();
-		const totalTime = minutes + seconds / 60;
-		const finalScore = Math.max(0, 10 - totalTime).toFixed(2);
-		const nicknameInput = document.getElementById('nickname-input').value.trim();
+		const totalTime = (minutes + seconds / 60).toFixed(2);
+		const finalScore = Math.max(0, 10 - totalTime).toFixed(1);
 
-		console.log(`Nickname: ${nicknameInput}, Time: ${totalTime}`); // Kiểm tra dữ liệu trước khi cập nhật
+		// Sử dụng `playerName` đã lưu để hiển thị thông báo kết quả
+		alert(`Kết thúc trò chơi! Tên người chơi: ${playerName}\nThời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}\nĐiểm: ${finalScore}`);
 
-		// Cập nhật điểm của người chơi vào Firestore
-		await updateLeaderboard(nicknameInput, totalTime);
-
-		// Kiểm tra xem bảng xếp hạng có được hiển thị đúng không
-		alert(`Kết thúc trò chơi! Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}\nĐiểm: ${finalScore}`);
+		// Hiển thị bảng xếp hạng sau khi người chơi hoàn thành trò chơi
 		document.querySelector('.leaderboard-container').style.display = 'block';
 		
-		// Hiển thị bảng xếp hạng sau khi cập nhật
+		// Cập nhật bảng xếp hạng sau khi nhập tên
+		updateLeaderboard(playerName, totalTime);
 		displayLeaderboard();
 	}
 
@@ -257,14 +245,20 @@
 
 			console.log("Leaderboard data:", leaderboard); // Kiểm tra dữ liệu bảng xếp hạng
 
+			if (!leaderboardElement) {
+				console.error("leaderboardElement is not found in the DOM.");
+				return;
+			}
+
 			leaderboardElement.innerHTML = '';
 			leaderboard.forEach(({ name, time }, index) => {
 				const li = document.createElement('li');
-				li.textContent = `#${index + 1}: ${name} - ${time.toFixed(2)} minutes`;
+				// Chuyển đổi `time` thành số trước khi dùng `toFixed`
+				li.textContent = `#${index + 1}: ${name} - ${parseFloat(time).toFixed(2)} minutes`;
 				leaderboardElement.appendChild(li);
 			});
 		} catch (e) {
-			console.error("Error fetching leaderboard: ", e);
+			console.error("Error fetching leaderboard:", e);
 			leaderboardElement.innerHTML = '<li>Không thể tải bảng xếp hạng</li>';
 		}
 	}
