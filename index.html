@@ -186,6 +186,13 @@
         const startButton = document.getElementById('start-button');
         const timerDisplay = document.getElementById('timer');
         const leaderboardElement = document.getElementById('leaderboard');
+		
+	    const images = [
+            { src: "images/Cá Dụ 1.png", pairId: "Dụ" }, { src: "images/Dụ 2.png", pairId: "Dụ" },
+            { src: "images/Cáo Diệp 1.png", pairId: "Diệp" }, { src: "images/Diệp.png", pairId: "Diệp" },
+        ];
+        const gameGrid = images.sort(() => 0.5 - Math.random());
+        const totalPairs = images.length / 2;
 
         // Âm thanh
         const backgroundMusic = new Audio('musics/background music.m4a');
@@ -267,13 +274,6 @@
 
     </script>
     <script type="module">
-        // Mã đã có trước đó
-        const images = [
-            { src: "images/Cá Dụ 1.png", pairId: "Dụ" }, { src: "images/Dụ 2.png", pairId: "Dụ" },
-            { src: "images/Cáo Diệp 1.png", pairId: "Diệp" }, { src: "images/Diệp.png", pairId: "Diệp" },
-        ];
-        const gameGrid = images.sort(() => 0.5 - Math.random());
-        const totalPairs = images.length / 2;
 
         // Khởi tạo thẻ
         gameGrid.forEach(item => {
