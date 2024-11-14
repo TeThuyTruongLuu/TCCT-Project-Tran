@@ -231,12 +231,13 @@
         });
     }
 
-    startButton.addEventListener('click', () => {
-        startButton.style.display = 'none';
-        gameBoard.style.display = 'grid';
-        startTimer();
-        displayLeaderboard();
-    });
+	startButton.addEventListener('click', () => {
+		startButton.style.display = 'none';
+		gameBoard.style.display = 'grid';
+		startTimer();
+		displayLeaderboard();
+	});
+
 
     gameGrid.forEach(item => {
         const card = document.createElement('div');
