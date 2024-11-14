@@ -111,11 +111,9 @@
 </div>
 
 <script type="module">
-    // Import các module Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    // Cấu hình Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyDrRgPPldi8hy04k8aSy8r2wCy91RrgqUM",
         authDomain: "tcct-project-tran.firebaseapp.com",
@@ -126,18 +124,15 @@
         measurementId: "G-D9EN3NEFD6"
     };
 
-    // Khởi tạo Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Biến game
     let seconds = 0;
     let minutes = 0;
     let timerInterval;
     let firstCard = null;
     let secondCard = null;
     let canFlip = true;
-    let totalPairs = 8;
     let matchedPairs = 0;
 
     const gameBoard = document.querySelector('.game-board');
@@ -145,7 +140,6 @@
     const timerDisplay = document.getElementById('timer');
     const leaderboardElement = document.getElementById('leaderboard');
 
-    // Tạo mảng các cặp ảnh
     const images = [
         { src: "images/Cá Dụ 1.png", pairId: "Dụ" }, { src: "images/Dụ 2.png", pairId: "Dụ" },
         { src: "images/Cáo Diệp 1.png", pairId: "Diệp" }, { src: "images/Diệp.png", pairId: "Diệp" },
@@ -156,7 +150,8 @@
         { src: "images/Hamster Tranh 1.png", pairId: "Tranh" }, { src: "images/Tranh.png", pairId: "Tranh" },
     ];
     const gameGrid = images.sort(() => 0.5 - Math.random());
-	const totalPairs = images.length / 2;
+    const totalPairs = images.length / 2;
+
     function startTimer() {
         timerInterval = setInterval(() => {
             seconds++;
@@ -209,26 +204,12 @@
         });
     }
 
-	startButton.addEventListener('click', () => {
-		console.log("Starting game...");
-		startButton.style.display = 'none';
-		gameBoard.style.display = 'grid';
-
-		try {
-			startTimer();
-			console.log("Timer started successfully.");
-		} catch (error) {
-			console.error("Error in startTimer:", error);
-		}
-
-		try {
-			displayLeaderboard();
-			console.log("Leaderboard displayed successfully.");
-		} catch (error) {
-			console.error("Error in displayLeaderboard:", error);
-		}
-	});
-
+    startButton.addEventListener('click', () => {
+        startButton.style.display = 'none';
+        gameBoard.style.display = 'grid';
+        startTimer();
+        displayLeaderboard();
+    });
 
     gameGrid.forEach(item => {
         const card = document.createElement('div');
