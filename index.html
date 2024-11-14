@@ -17,7 +17,7 @@
             overflow-y: auto;
             position: relative;
         }
-        .score-board {
+        .score-board, .leaderboard-container {
             margin-bottom: 10px;
             font-size: 24px;
             font-weight: bold;
@@ -35,7 +35,7 @@
             grid-gap: 10px;
             width: 90vw;
             max-width: 600px;
-            display: none; /* Ẩn game board ban đầu */
+            display: none;
         }
         .card {
             width: 100%;
@@ -87,18 +87,26 @@
             cursor: pointer;
             margin-bottom: 20px;
         }
+        #leaderboard {
+            list-style-type: none;
+            padding: 0;
+            text-align: center;
+        }
+        #leaderboard li {
+            font-size: 18px;
+            margin: 5px 0;
+        }
         /* Responsive adjustments */
         @media (max-width: 600px) {
             .game-board {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
-
         @media (max-width: 400px) {
             .game-board {
                 grid-template-columns: repeat(2, 1fr);
             }
-            .score-board, .timer-board {
+            .score-board, .timer-board, .leaderboard-container {
                 font-size: 20px;
             }
             .card-back {
@@ -115,9 +123,49 @@
 <div class="game-board">
     <!-- Cards will be created dynamically using JavaScript -->
 </div>
+<div class="leaderboard-container">
+    <h3>Bảng xếp hạng</h3>
+    <ul id="leaderboard"></ul>
+</div>
 
-<script>
-    // Tạo mảng chứa các cặp hình ảnh
+<script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyDrRgPPldi8hy04k8aSy8r2wCy91RrgqUM",
+        authDomain: "tcct-project-tran.firebaseapp.com",
+        projectId: "tcct-project-tran",
+        storageBucket: "tcct-project-tran.firebasestorage.app",
+        messagingSenderId: "826272441955",
+        appId: "1:826272441955:web:86a1f521ccee2e9d3e3a56",
+        measurementId: "G-D9EN3NEFD6"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Game variables
+    let score = 100;
+    let seconds = 0;
+    let minutes = 0;
+    let timerInterval;
+    let firstCard = null;
+    let secondCard = null;
+    let canFlip = true;
+    let totalPairs = 8;
+    let matchedPairs = 0;
+
+    const gameBoard = document.querySelector('.game-board');
+    const scoreDisplay = document.getElementById('score');
+    const startButton = document.getElementById('start-button');
+    const timerDisplay = document.getElementById('timer');
+    const leaderboardElement = document.getElementById('leaderboard');
+
+    // Initialize the game board
     const images = [
         { src: "images/Cá Dụ 1.png", pairId: "Dụ" }, { src: "images/Dụ 2.png", pairId: "Dụ" },
         { src: "images/Cáo Diệp 1.png", pairId: "Diệp" }, { src: "images/Diệp.png", pairId: "Diệp" },
@@ -127,35 +175,17 @@
         { src: "images/Cụt Chu 1.png", pairId: "Chu" }, { src: "images/Chu.png", pairId: "Chu" },
         { src: "images/Hamster Tranh 1.png", pairId: "Tranh" }, { src: "images/Tranh.png", pairId: "Tranh" },
     ];
-
     const gameGrid = images.sort(() => 0.5 - Math.random());
-    let firstCard = null;
-    let secondCard = null;
-    let canFlip = true;
-    let score = 0;
-    let totalPairs = images.length / 2;
-    let matchedPairs = 0;
-
-    const gameBoard = document.querySelector('.game-board');
-    const scoreDisplay = document.getElementById('score');
-    const startButton = document.getElementById('start-button');
-    const timerDisplay = document.getElementById('timer');
-
-    let seconds = 0;
-    let minutes = 0;
-    let timerInterval;
-
-    function updateTime() {
-        seconds++;
-        if (seconds === 60) {
-            seconds = 0;
-            minutes++;
-        }
-        timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
 
     function startTimer() {
-        timerInterval = setInterval(updateTime, 1000);
+        timerInterval = setInterval(() => {
+            seconds++;
+            if (seconds === 60) {
+                seconds = 0;
+                minutes++;
+            }
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }, 1000);
     }
 
     function stopTimer() {
@@ -164,9 +194,38 @@
 
     function showFinalScore() {
         stopTimer();
-        const finalTime = `${minutes}.${seconds < 10 ? '0' : ''}${seconds}`;
-        const finalScore = Math.max(0, 100 - (minutes * 60 + seconds));
-        alert(`Kết thúc trò chơi! Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}\nĐiểm: ${finalScore}`);
+        const finalTime = minutes * 60 + seconds;
+        updateLeaderboard(finalTime);
+        alert(`Kết thúc trò chơi! Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}\nĐiểm: ${score}`);
+    }
+
+    async function getLeaderboard() {
+        const leaderboard = [];
+        const leaderboardQuery = query(collection(db, "leaderboard"), orderBy("time", "asc"), limit(5));
+        const querySnapshot = await getDocs(leaderboardQuery);
+        querySnapshot.forEach((doc) => {
+            leaderboard.push(doc.data().time);
+        });
+        return leaderboard;
+    }
+
+    async function updateLeaderboard(completionTime) {
+        try {
+            await addDoc(collection(db, "leaderboard"), { time: completionTime });
+            displayLeaderboard();
+        } catch (e) {
+            console.error("Error adding document: ", e);
+        }
+    }
+
+    async function displayLeaderboard() {
+        const leaderboard = await getLeaderboard();
+        leaderboardElement.innerHTML = '';
+        leaderboard.forEach((time, index) => {
+            const li = document.createElement('li');
+            li.textContent = `#${index + 1}: ${time} seconds`;
+            leaderboardElement.appendChild(li);
+        });
     }
 
     startButton.addEventListener('click', () => {
@@ -175,6 +234,7 @@
         startButton.style.display = 'none';
         gameBoard.style.display = 'grid';
         startTimer();
+        displayLeaderboard();
     });
 
     gameGrid.forEach(item => {
