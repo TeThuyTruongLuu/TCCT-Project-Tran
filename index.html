@@ -15,10 +15,18 @@
             height: 100vh;
             justify-content: center;
             overflow-y: auto;
+            position: relative;
         }
         .score-board {
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             font-size: 24px;
+            font-weight: bold;
+        }
+        .timer-board {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 20px;
             font-weight: bold;
         }
         .game-board {
@@ -27,6 +35,7 @@
             grid-gap: 10px;
             width: 90vw;
             max-width: 600px;
+            display: none; /* Ẩn game board ban đầu */
         }
         .card {
             width: 100%;
@@ -55,7 +64,8 @@
             border-radius: 10px;
         }
         .card-back {
-            background-color: #00aaff;
+            background-image: url('images/Cá Dụ 1.png');
+            background-size: cover;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -71,7 +81,12 @@
         .card-front {
             transform: rotateY(180deg);
         }
-
+        #start-button {
+            padding: 10px 20px;
+            font-size: 20px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
         /* Responsive adjustments */
         @media (max-width: 600px) {
             .game-board {
@@ -83,7 +98,7 @@
             .game-board {
                 grid-template-columns: repeat(2, 1fr);
             }
-            .score-board {
+            .score-board, .timer-board {
                 font-size: 20px;
             }
             .card-back {
@@ -94,7 +109,9 @@
 </head>
 <body>
 
-<div class="score-board">Score: <span id="score">0</span></div>
+<div class="timer-board">Thời gian: <span id="timer">00:00</span></div>
+<div class="score-board">Điểm: <span id="score">0</span></div>
+<button id="start-button">Bắt đầu</button>
 <div class="game-board">
     <!-- Cards will be created dynamically using JavaScript -->
 </div>
@@ -111,21 +128,59 @@
         { src: "images/Hamster Tranh 1.png", pairId: "Tranh" }, { src: "images/Tranh.png", pairId: "Tranh" },
     ];
 
-    // Trộn các thẻ ngẫu nhiên
     const gameGrid = images.sort(() => 0.5 - Math.random());
     let firstCard = null;
     let secondCard = null;
     let canFlip = true;
     let score = 0;
+    let totalPairs = images.length / 2;
+    let matchedPairs = 0;
 
     const gameBoard = document.querySelector('.game-board');
     const scoreDisplay = document.getElementById('score');
+    const startButton = document.getElementById('start-button');
+    const timerDisplay = document.getElementById('timer');
 
-    // Tạo thẻ
+    let seconds = 0;
+    let minutes = 0;
+    let timerInterval;
+
+    function updateTime() {
+        seconds++;
+        if (seconds === 60) {
+            seconds = 0;
+            minutes++;
+        }
+        timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function startTimer() {
+        timerInterval = setInterval(updateTime, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+    }
+
+    function showFinalScore() {
+        stopTimer();
+        const finalTime = `${minutes}.${seconds < 10 ? '0' : ''}${seconds}`;
+        const finalScore = Math.max(0, 100 - (minutes * 60 + seconds));
+        alert(`Kết thúc trò chơi! Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}\nĐiểm: ${finalScore}`);
+    }
+
+    startButton.addEventListener('click', () => {
+        score = 100;
+        scoreDisplay.textContent = score;
+        startButton.style.display = 'none';
+        gameBoard.style.display = 'grid';
+        startTimer();
+    });
+
     gameGrid.forEach(item => {
         const card = document.createElement('div');
         card.classList.add('card');
-        card.dataset.pairId = item.pairId; // Dùng pairId để xác định cặp
+        card.dataset.pairId = item.pairId;
 
         const cardInner = document.createElement('div');
         cardInner.classList.add('card-inner');
@@ -138,14 +193,12 @@
 
         const cardBack = document.createElement('div');
         cardBack.classList.add('card-back');
-        cardBack.textContent = "?";
 
         cardInner.appendChild(cardFront);
         cardInner.appendChild(cardBack);
         card.appendChild(cardInner);
         gameBoard.appendChild(card);
 
-        // Sự kiện lật thẻ
         card.addEventListener('click', () => {
             if (!canFlip || card.classList.contains('flip')) return;
             card.classList.add('flip');
@@ -159,21 +212,21 @@
         });
     });
 
-    // Kiểm tra xem hai thẻ có thuộc cùng một cặp không
     function checkMatch() {
         canFlip = false;
         const isMatch = firstCard.dataset.pairId === secondCard.dataset.pairId;
 
         if (isMatch) {
-            score += 10; // Cộng 10 điểm nếu ghép đúng
-            scoreDisplay.textContent = score;
+            matchedPairs++;
+            if (matchedPairs === totalPairs) {
+                showFinalScore();
+            }
             resetCards(true);
         } else {
             setTimeout(() => resetCards(false), 1000);
         }
     }
 
-    // Đặt lại các thẻ
     function resetCards(isMatch) {
         if (!isMatch) {
             firstCard.classList.remove('flip');
