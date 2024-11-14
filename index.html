@@ -135,7 +135,12 @@
         { src: "images/Cụt Chu 1.png", pairId: "Chu" }, { src: "images/Chu.png", pairId: "Chu" },
         { src: "images/Hamster Tranh 1.png", pairId: "Tranh" }, { src: "images/Tranh.png", pairId: "Tranh" },
     ];
-
+    startButton.addEventListener('click', () => {
+        startButton.style.display = 'none';
+        gameBoard.style.display = 'grid';
+        startTimer();
+        initializeGame();
+    });
     function startTimer() {
         let seconds = 0;
         let minutes = 0;
@@ -260,12 +265,6 @@
             leaderboardElement.appendChild(li);
         });
     }
-    startButton.addEventListener('click', () => {
-        startButton.style.display = 'none';
-        gameBoard.style.display = 'grid';
-        startTimer();
-        initializeGame();
-    });
 </script>
 </body>
 </html>
