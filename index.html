@@ -259,19 +259,11 @@
 			console.log("Updating leaderboard with:", name, time); // Kiểm tra giá trị được lưu vào Firestore
 			await addDoc(collection(db, "leaderboard"), { name: name, time: parseFloat(time) });
 			console.log("Document successfully written!");
+			displayLeaderboard(); // Hiển thị bảng xếp hạng sau khi cập nhật
 		} catch (e) {
 			console.error("Error adding document to leaderboard:", e);
 		}
 	}
-
-
-	// Hàm để hiển thị bảng xếp hạng
-	window.viewLeaderboard = function viewLeaderboard() {
-		document.getElementById('result-panel').style.display = 'none';
-		document.querySelector('.leaderboard-container').style.display = 'block';
-		displayLeaderboard();
-	}
-
 
 	async function displayLeaderboard() {
 		try {
@@ -279,25 +271,20 @@
 			const leaderboardQuery = query(collection(db, "leaderboard"), orderBy("time", "asc"), limit(5));
 			const querySnapshot = await getDocs(leaderboardQuery);
 
-			// Kiểm tra nếu không có dữ liệu
 			if (querySnapshot.empty) {
 				console.log("No data found in leaderboard.");
 				leaderboardElement.innerHTML = '<li>Chưa có dữ liệu trong bảng xếp hạng</li>';
 				return;
 			}
 
-			// Lấy dữ liệu và kiểm tra dữ liệu
 			querySnapshot.forEach((doc) => {
 				const data = doc.data();
-				if (typeof data.time === 'string') {
-					data.time = parseFloat(data.time); // Chuyển chuỗi sang số nếu cần
-				}
 				leaderboard.push(data);
 			});
 
 			console.log("Leaderboard data:", leaderboard); // Kiểm tra dữ liệu bảng xếp hạng
 
-			leaderboardElement.innerHTML = ''; // Xóa nội dung cũ
+			leaderboardElement.innerHTML = '';
 			leaderboard.forEach(({ name, time }, index) => {
 				const li = document.createElement('li');
 				li.textContent = `#${index + 1}: ${name} - ${time.toFixed(2)} minutes`;
@@ -308,6 +295,7 @@
 			leaderboardElement.innerHTML = '<li>Không thể tải bảng xếp hạng</li>';
 		}
 	}
+
 
 
     // Kiểm tra mã và bắt đầu trò chơi
