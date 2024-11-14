@@ -254,6 +254,17 @@
 		location.reload();
 	}
 
+	async function updateLeaderboard(name, time) {
+		try {
+			console.log("Updating leaderboard with:", name, time); // Kiểm tra giá trị được lưu vào Firestore
+			await addDoc(collection(db, "leaderboard"), { name: name, time: parseFloat(time) });
+			console.log("Document successfully written!");
+		} catch (e) {
+			console.error("Error adding document to leaderboard:", e);
+		}
+	}
+
+
 	// Hàm để hiển thị bảng xếp hạng
 	window.viewLeaderboard = function viewLeaderboard() {
 		document.getElementById('result-panel').style.display = 'none';
