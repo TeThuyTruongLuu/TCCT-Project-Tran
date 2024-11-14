@@ -262,45 +262,39 @@
 	}
 
 
-	async function updateLeaderboard(name, time) {
+	async function updateLeaderboard(name, score, time) {
 		try {
-			console.log("Updating leaderboard with:", name, time); // Kiểm tra giá trị được lưu vào Firestore
-			await addDoc(collection(db, "leaderboard"), { name: name, time: parseFloat(time) });
-			console.log("Document successfully written!");
-			displayLeaderboard(); // Hiển thị bảng xếp hạng sau khi cập nhật
-		} catch (e) {
-			console.error("Error adding document to leaderboard:", e);
+			const response = await fetch("https://script.google.com/macros/s/AKfycbz3ZVAvO-O01H7yiJOYsr0ru9ien27RUJGh_vooNVF47wqLv90DeFvETrFeOQWx86Xozw/exec", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({ name: name, score: score, time: time })
+			});
+			
+			const result = await response.json();
+			console.log("Leaderboard update result:", result);
+		} catch (error) {
+			console.error("Error updating leaderboard:", error);
 		}
 	}
 
 	async function displayLeaderboard() {
 		try {
-			const leaderboard = [];
+			const response = await fetch("https://script.google.com/macros/s/AKfycbz3ZVAvO-O01H7yiJOYsr0ru9ien27RUJGh_vooNVF47wqLv90DeFvETrFeOQWx86Xozw/exec");
 			const leaderboardQuery = query(collection(db, "leaderboard"), orderBy("time", "asc"), limit(5));
-			const querySnapshot = await getDocs(leaderboardQuery);
+			const leaderboard = await response.json();
+			
+			const leaderboardElement = document.getElementById("leaderboard");
+			leaderboardElement.innerHTML = "";
 
-			if (querySnapshot.empty) {
-				console.log("No data found in leaderboard.");
-				leaderboardElement.innerHTML = '<li>Chưa có dữ liệu trong bảng xếp hạng</li>';
-				return;
-			}
-
-			querySnapshot.forEach((doc) => {
-				const data = doc.data();
-				leaderboard.push(data);
-			});
-
-			console.log("Leaderboard data:", leaderboard); // Kiểm tra dữ liệu bảng xếp hạng
-
-			leaderboardElement.innerHTML = '';
-			leaderboard.forEach(({ name, time }, index) => {
-				const li = document.createElement('li');
-				li.textContent = `#${index + 1}: ${name} - ${time.toFixed(2)} minutes`;
+			leaderboard.forEach((entry, index) => {
+				const li = document.createElement("li");
+				li.textContent = `#${index + 1}: ${entry.name} - ${entry.score} points - ${entry.time} minutes`;
 				leaderboardElement.appendChild(li);
 			});
-		} catch (e) {
-			console.error("Error fetching leaderboard:", e);
-			leaderboardElement.innerHTML = '<li>Không thể tải bảng xếp hạng</li>';
+		} catch (error) {
+			console.error("Error fetching leaderboard:", error);
 		}
 	}
 
