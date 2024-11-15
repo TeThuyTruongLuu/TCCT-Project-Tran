@@ -17,7 +17,7 @@ const firestore= firebase.firestore();
 const db = firestore.collection("leaderboard");
 
 // Hàm lưu điểm vào Firestore
-function updateLeaderboard(playerName, finalScore, totalTime) {
+window.updateLeaderboard = function(playerName, finalScore, totalTime) {
     return db.add({
         playerName: playerName,
         finalScore: parseFloat(finalScore),
@@ -54,4 +54,3 @@ function displayLeaderboard() {
 }
 // Xuất các hàm ra ngoài để sử dụng ở file khác
 //export { updateLeaderboard, displayLeaderboard };
-initializeApp();
