@@ -11,7 +11,7 @@
             flex-direction: column;
             align-items: center;
             font-family: Arial, sans-serif;
-            background-color: #F3F7FA; /* Màu nền mới */
+            background-color: #F3F7FA;
             margin: 0;
             height: 100vh;
             justify-content: center;
@@ -44,43 +44,45 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 60px; /* Tăng kích thước */
-            border-radius: 14px; /* Bo tròn hơn */
-            background-color: #FFFFFF; /* Màu nền mới từ bảng màu */
+            padding: 60px;
+            border-radius: 14px;
+            background-color: #FFFFFF;
             box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 10;
-            color: #FFFFFF; /* Màu chữ */
+            color: #1F271B;
+            max-width: 90%;
+            box-sizing: border-box;
         }
         #login-modal h2 {
             font-size: 24px;
             margin-bottom: 15px;
-            color: #1F271B; /* Màu chữ tiêu đề từ bảng màu */
         }
         #login-modal input {
             margin: 10px 0;
             padding: 12px;
             font-size: 16px;
-            border: 1px solid #A9FBD7; /* Viền theo bảng màu */
+            border: 1px solid #A9FBD7;
             border-radius: 8px;
             width: 100%;
             max-width: 350px;
             box-sizing: border-box;
         }
         #start-button {
-            background-color: #F6D0B1; /* Màu từ bảng màu */
+            background-color: #F6D0B1;
             border: none;
             padding: 12px 24px;
             font-size: 18px;
             cursor: pointer;
             border-radius: 8px;
-            color: #5A5766; /* Màu chữ cho nút */
+            color: #5A5766;
             transition: background-color 0.3s;
-			font-weight: bold;
+            font-weight: bold;
         }
+        
         /* Thiết kế thẻ (card) */
         .card {
             width: 100%;
@@ -111,7 +113,7 @@
             border-radius: 8px;
         }
         .card-back {
-            background-color: #1F271B; /* Màu nền mặt sau của thẻ */
+            background-color: #1F271B;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -167,209 +169,199 @@
 		</div>
 	</div>
 
+<script>
+// Biến toàn cục
+let playerName = "";
+let seconds = 0;
+let minutes = 0;
+let timerInterval;
+let firstCard = null;
+let secondCard = null;
+let canFlip = true;
+let matchedPairs = 0;
 
-	let playerName = "";
-    let seconds = 0;
-    let minutes = 0;
-    let timerInterval;
-    let firstCard = null;
-    let secondCard = null;
-    let canFlip = true;
-    let matchedPairs = 0;
+// Khai báo hình ảnh và âm thanh
+const images = [
+    { src: "images/Cá Dụ 1.png", pairId: "Dụ" }, { src: "images/Dụ 2.png", pairId: "Dụ" },
+    { src: "images/Cáo Diệp 1.png", pairId: "Diệp" }, { src: "images/Diệp.png", pairId: "Diệp" },
+    { src: "images/Cáo tuyết Lam 1.png", pairId: "Lam" }, { src: "images/Lam.png", pairId: "Lam" },
+    { src: "images/Chuột Duệ 1.png", pairId: "Duệ" }, { src: "images/Duệ.png", pairId: "Duệ" },
+    { src: "images/Corgi Lư 1.png", pairId: "Lư" }, { src: "images/Lư.png", pairId: "Lư" },
+    { src: "images/Cụt Chu 1.png", pairId: "Chu" }, { src: "images/Chu.png", pairId: "Chu" },
+    { src: "images/Hamster Tranh 1.png", pairId: "Tranh" }, { src: "images/Tranh.png", pairId: "Tranh" },
+];
 
-    const gameBoard = document.querySelector('.game-board');
-    const startButton = document.getElementById('start-button');
-    const timerDisplay = document.getElementById('timer');
-    const leaderboardElement = document.getElementById('leaderboard');
-    
-    const images = [
-        { src: "images/Cá Dụ 1.png", pairId: "Dụ" }, { src: "images/Dụ 2.png", pairId: "Dụ" },
-        { src: "images/Cáo Diệp 1.png", pairId: "Diệp" }, { src: "images/Diệp.png", pairId: "Diệp" },
-		{ src: "images/Cáo tuyết Lam 1.png", pairId: "Lam" }, { src: "images/Lam.png", pairId: "Lam" },
-        { src: "images/Chuột Duệ 1.png", pairId: "Duệ" }, { src: "images/Duệ.png", pairId: "Duệ" },
-        { src: "images/Corgi Lư 1.png", pairId: "Lư" }, { src: "images/Lư.png", pairId: "Lư" },
-        { src: "images/Cụt Chu 1.png", pairId: "Chu" }, { src: "images/Chu.png", pairId: "Chu" },
-        { src: "images/Hamster Tranh 1.png", pairId: "Tranh" }, { src: "images/Tranh.png", pairId: "Tranh" },
-    ];
-    const gameGrid = images.sort(() => 0.5 - Math.random());
-    const totalPairs = images.length / 2;
+// Xáo trộn hình ảnh
+const gameGrid = images.sort(() => 0.5 - Math.random());
+const totalPairs = images.length / 2;
 
-    // Âm thanh
-    const backgroundMusic = new Audio('musics/background music.m4a');
-    const correctSound = new Audio('musics/right.m4a');
-    const wrongSound = new Audio('musics/wrong.m4a');
+// Âm thanh
+const backgroundMusic = new Audio('musics/background music.m4a');
+const correctSound = new Audio('musics/right.m4a');
+const wrongSound = new Audio('musics/wrong.m4a');
+backgroundMusic.loop = true;
+backgroundMusic.volume = 0.2;
 
-    // Bắt đầu âm thanh nền
-    backgroundMusic.loop = true;
-    backgroundMusic.volume = 0.2; // Giảm âm lượng để không gây khó chịu cho người nghe
-    
-    function startTimer() {
-        timerInterval = setInterval(() => {
-            seconds++;
-            if (seconds === 60) {
-                seconds = 0;
-                minutes++;
-            }
-            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }, 1000);
+// Khởi động bộ đếm thời gian
+function startTimer() {
+    timerInterval = setInterval(() => {
+        seconds++;
+        if (seconds === 60) {
+            seconds = 0;
+            minutes++;
+        }
+        document.getElementById('timer').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }, 1000);
+}
+
+// Dừng bộ đếm thời gian
+function stopTimer() {
+    clearInterval(timerInterval);
+}
+
+// Bắt đầu trò chơi khi nhấn nút "Bắt đầu"
+document.getElementById('start-button').addEventListener('click', () => {
+    const codeInput = document.getElementById('code-input').value.trim();
+    const nicknameInput = document.getElementById('nickname-input').value.trim();
+
+    if (codeInput === "TCCT" && nicknameInput) {
+        playerName = nicknameInput;
+        document.getElementById('login-modal').style.display = 'none';
+        document.querySelector('.game-board').style.display = 'grid';
+        backgroundMusic.play();
+        startTimer();
+    } else {
+        alert("Vui lòng nhập đúng mã 'TCCT' và tên hợp lệ.");
     }
+});
 
-    function stopTimer() {
-        clearInterval(timerInterval);
-        //backgroundMusic.pause(); // Dừng nhạc nền khi dừng trò chơi
-    }
+// Tạo các thẻ
+gameGrid.forEach(item => {
+    const card = document.createElement('div');
+    card.classList.add('card');
+    card.dataset.pairId = item.pairId;
 
-    // Hiển thị bảng xếp hạng
-	function showFinalScore() {
-		stopTimer();
-		const totalTime = (minutes + seconds / 60).toFixed(2);
-		const finalScore = Math.max(0, 10 - totalTime).toFixed(1);
+    const cardInner = document.createElement('div');
+    cardInner.classList.add('card-inner');
 
-		// Cập nhật nội dung của panel kết quả
-		document.getElementById('result-player-name').textContent = `Tên người chơi: ${playerName}`;
-		document.getElementById('result-time').textContent = `Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-		document.getElementById('result-score').textContent = `Điểm: ${finalScore}`;
+    const cardFront = document.createElement('div');
+    cardFront.classList.add('card-front');
+    const img = document.createElement('img');
+    img.src = item.src;
+    img.loading = "lazy";
+    cardFront.appendChild(img);
 
-		// Hiển thị panel kết quả
-		document.getElementById('result-panel').style.display = 'block';
+    const cardBack = document.createElement('div');
+    cardBack.classList.add('card-back');
 
-		// Cập nhật bảng xếp hạng
-		updateLeaderboard(playerName, totalTime);
-		displayLeaderboard();
-	}
+    cardInner.appendChild(cardFront);
+    cardInner.appendChild(cardBack);
+    card.appendChild(cardInner);
+    document.querySelector('.game-board').appendChild(card);
 
-	// Hàm để khởi động lại trò chơi
-	window.restartGame = function restartGame() {
-		location.reload();
-	}
+    // Sự kiện lật thẻ
+    card.addEventListener('click', () => {
+        if (!canFlip || card.classList.contains('flip')) return;
+        card.classList.add('flip');
 
-	// Hàm để hiển thị bảng xếp hạng
-	window.viewLeaderboard = function viewLeaderboard() {
-		document.getElementById('result-panel').style.display = 'none';
-		document.querySelector('.leaderboard-container').style.display = 'block';
-		displayLeaderboard();
-	}
-
-
-	async function updateLeaderboard(name, score, time) {
-		try {
-			const response = await fetch("https://script.google.com/macros/s/AKfycbxsmHH0wAFU1AnyBc3AcCZewFgMTAqrm6XpO1F1Upzo--4NLnHwofZi_UwD5EhvODtNrA/exec", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ name: name, score: score, time: time })
-			});
-			const result = await response.json();
-			console.log("Cập nhật bảng xếp hạng:", result);
-		} catch (error) {
-			console.error("Lỗi cập nhật bảng xếp hạng:", error);
-		}
-	}
-	async function displayLeaderboard() {
-		try {
-			// Gửi yêu cầu GET tới Apps Script để lấy dữ liệu bảng xếp hạng
-			const response = await fetch("https://script.google.com/macros/s/AKfycbxsmHH0wAFU1AnyBc3AcCZewFgMTAqrm6XpO1F1Upzo--4NLnHwofZi_UwD5EhvODtNrA/exec");
-			const leaderboard = await response.json();
-
-			// Lấy phần tử HTML chứa bảng xếp hạng và làm trống nội dung cũ
-			const leaderboardElement = document.getElementById("leaderboard");
-			leaderboardElement.innerHTML = "";
-
-			// Duyệt qua từng mục trong bảng xếp hạng và hiển thị
-			leaderboard.forEach((entry, index) => {
-				const li = document.createElement("li");
-				li.textContent = `#${index + 1}: ${entry.name} - ${entry.score} điểm - ${entry.time} phút`;
-				leaderboardElement.appendChild(li);
-			});
-		} catch (error) {
-			console.error("Lỗi khi lấy dữ liệu bảng xếp hạng:", error);
-		}
-	}
-
-
-
-
-    // Kiểm tra mã và bắt đầu trò chơi
-    startButton.addEventListener('click', () => {
-        const codeInput = document.getElementById('code-input').value.trim();
-        const nicknameInput = document.getElementById('nickname-input').value.trim();
-
-        if (codeInput === "TCCT" && nicknameInput) {
-			playerName = nicknameInput;
-			
-            document.getElementById('login-modal').style.display = 'none';
-            gameBoard.style.display = 'grid';
-            backgroundMusic.play(); // Bắt đầu nhạc nền khi bắt đầu trò chơi
-            startTimer();
+        if (!firstCard) {
+            firstCard = card;
         } else {
-            alert("Invalid code or nickname. Please enter code 'TCCT' and a valid nickname.");
+            secondCard = card;
+            checkMatch();
         }
     });
+});
 
-    // Khởi tạo thẻ
-    gameGrid.forEach(item => {
-        const card = document.createElement('div');
-        card.classList.add('card');
-        card.dataset.pairId = item.pairId;
+// Kiểm tra ghép cặp
+function checkMatch() {
+    canFlip = false;
+    const isMatch = firstCard.dataset.pairId === secondCard.dataset.pairId;
 
-        const cardInner = document.createElement('div');
-        cardInner.classList.add('card-inner');
+    if (isMatch) {
+        matchedPairs++;
+        correctSound.play();
+        resetCards(true);
 
-        const cardFront = document.createElement('div');
-        cardFront.classList.add('card-front');
-        const img = document.createElement('img');
-        img.src = item.src;
-        cardFront.appendChild(img);
+        if (matchedPairs === totalPairs) {
+            setTimeout(showFinalScore, 500);
+        }
+    } else {
+        wrongSound.play();
+        setTimeout(() => resetCards(false), 1000);
+    }
+}
 
-        const cardBack = document.createElement('div');
-        cardBack.classList.add('card-back');
+// Đặt lại thẻ
+function resetCards(isMatch) {
+    if (!isMatch) {
+        firstCard.classList.remove('flip');
+        secondCard.classList.remove('flip');
+    }
+    firstCard = null;
+    secondCard = null;
+    canFlip = true;
+}
 
-        cardInner.appendChild(cardFront);
-        cardInner.appendChild(cardBack);
-        card.appendChild(cardInner);
-        gameBoard.appendChild(card);
+// Hiển thị điểm cuối và cập nhật bảng xếp hạng
+function showFinalScore() {
+    stopTimer();
+    const totalTime = (minutes + seconds / 60).toFixed(2);
+    const finalScore = Math.max(0, 10 - totalTime).toFixed(1);
 
-        card.addEventListener('click', () => {
-            if (!canFlip || card.classList.contains('flip')) return;
-            card.classList.add('flip');
+    document.getElementById('result-player-name').textContent = `Tên người chơi: ${playerName}`;
+    document.getElementById('result-time').textContent = `Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    document.getElementById('result-score').textContent = `Điểm: ${finalScore}`;
+    document.getElementById('result-panel').style.display = 'block';
 
-            if (!firstCard) {
-                firstCard = card;
-            } else {
-                secondCard = card;
-                checkMatch();
-            }
+    updateLeaderboard(playerName, finalScore, totalTime);
+    displayLeaderboard();
+}
+
+// Gửi dữ liệu lên Google Sheets
+async function updateLeaderboard(name, score, time) {
+    try {
+        const response = await fetch("https://script.google.com/macros/s/AKfycbxsmHH0wAFU1AnyBc3AcCZewFgMTAqrm6XpO1F1Upzo--4NLnHwofZi_UwD5EhvODtNrA/exec", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: name, score: score, time: time })
         });
-    });
-
-    // Kiểm tra ghép cặp
-    function checkMatch() {
-        canFlip = false;
-        const isMatch = firstCard.dataset.pairId === secondCard.dataset.pairId;
-
-        if (isMatch) {
-            matchedPairs++;
-            correctSound.play(); // Phát âm thanh khi đoán đúng
-            resetCards(true);
-
-            if (matchedPairs === totalPairs) {
-                setTimeout(showFinalScore, 500);
-            }
-        } else {
-            wrongSound.play(); // Phát âm thanh khi đoán sai
-            setTimeout(() => resetCards(false), 1000);
-        }
+        const result = await response.json();
+        console.log("Cập nhật bảng xếp hạng:", result);
+    } catch (error) {
+        console.error("Lỗi cập nhật bảng xếp hạng:", error);
     }
+}
 
-    // Đặt lại thẻ
-    function resetCards(isMatch) {
-        if (!isMatch) {
-            firstCard.classList.remove('flip');
-            secondCard.classList.remove('flip');
-        }
-        firstCard = null;
-        secondCard = null;
-        canFlip = true;
+// Hiển thị bảng xếp hạng
+async function displayLeaderboard() {
+    try {
+        const response = await fetch("https://script.google.com/macros/s/AKfycbxsmHH0wAFU1AnyBc3AcCZewFgMTAqrm6XpO1F1Upzo--4NLnHwofZi_UwD5EhvODtNrA/exec");
+        const leaderboard = await response.json();
+
+        const leaderboardElement = document.getElementById("leaderboard");
+        leaderboardElement.innerHTML = "";
+        leaderboard.forEach((entry, index) => {
+            const li = document.createElement("li");
+            li.textContent = `#${index + 1}: ${entry.name} - ${entry.score} điểm - ${entry.time} phút`;
+            leaderboardElement.appendChild(li);
+        });
+    } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu bảng xếp hạng:", error);
     }
+}
+
+// Khởi động lại trò chơi
+window.restartGame = function restartGame() {
+    location.reload();
+}
+
+// Hiển thị bảng xếp hạng khi nhấn nút
+window.viewLeaderboard = function viewLeaderboard() {
+    document.getElementById('result-panel').style.display = 'none';
+    document.querySelector('.leaderboard-container').style.display = 'block';
+    displayLeaderboard();
+}
 </script>
 </body>
 </html>
