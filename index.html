@@ -318,13 +318,30 @@ function showFinalScore() {
     displayLeaderboard();
 }
 
+function doPost(e) {
+    // Mở bảng tính bằng ID của Google Sheets và chọn bảng "Leaderboard"
+    const sheet = SpreadsheetApp.openById("14GLVwg9t6VpdS8n9ZDhWPyPS9gAUZyCyNUytcmS1xWA").getSheetByName("Leaderboard");
+
+    // Parse dữ liệu JSON từ yêu cầu POST
+    const data = JSON.parse(e.postData.contents);
+
+    // Thêm hàng mới vào bảng với các giá trị từ dữ liệu JSON
+    sheet.appendRow([data.name, data.score, data.time]);
+
+    // Trả về phản hồi JSON cho client
+    return ContentService
+        .createTextOutput(JSON.stringify({ status: "success" }))
+        .setMimeType(ContentService.MimeType.JSON);
+}
+
+
 // Gửi dữ liệu lên Google Sheets
 async function updateLeaderboard(name, score, time) {
     try {
         const response = await fetch("https://script.google.com/macros/s/AKfycbxsmHH0wAFU1AnyBc3AcCZewFgMTAqrm6XpO1F1Upzo--4NLnHwofZi_UwD5EhvODtNrA/exec", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: name, score: score, time: time })
+            body: JSON.stringify({ name: playerName, score: finalScore, time: totalTime })
         });
         const result = await response.json();
         console.log("Cập nhật bảng xếp hạng:", result);
