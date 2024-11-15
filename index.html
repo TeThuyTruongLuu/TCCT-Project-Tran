@@ -170,9 +170,8 @@
 		</div>
 	</div>
 
-<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-analytics.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 
 <script>
 // Biến toàn cục
@@ -378,6 +377,11 @@ function displayLeaderboard() {
 // Khởi động lại trò chơi
 window.restartGame = function restartGame() {
     location.reload();
+}
+function viewLeaderboard() {
+    document.getElementById('result-panel').style.display = 'none';
+    document.querySelector('.leaderboard-container').style.display = 'block';
+    displayLeaderboard();
 }
 
 // Hiển thị bảng xếp hạng khi nhấn nút
