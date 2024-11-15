@@ -171,6 +171,7 @@
 	</div>
 
 <script type="module" src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
 <script type="module" src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 
 <script>
@@ -303,22 +304,6 @@ function resetCards(isMatch) {
     canFlip = true;
 }
 
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDrRgPPldi8hy04k8aSy8r2wCy91RrgqUM",
-  authDomain: "tcct-project-tran.firebaseapp.com",
-  databaseURL: "https://tcct-project-tran-default-rtdb.firebaseio.com",
-  projectId: "tcct-project-tran",
-  storageBucket: "tcct-project-tran.firebasestorage.app",
-  messagingSenderId: "826272441955",
-  appId: "1:826272441955:web:86a1f521ccee2e9d3e3a56",
-  measurementId: "G-D9EN3NEFD6"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
 // Hiển thị điểm cuối và cập nhật bảng xếp hạng
 function showFinalScore() {
     stopTimer();
@@ -334,6 +319,28 @@ function showFinalScore() {
     updateLeaderboard(playerName, finalScore, totalTime);
 }
 
+import { FirebaseApp, initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getDatabase } from "firebase/database";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDrRgPPldi8hy04k8aSy8r2wCy91RrgqUM",
+  authDomain: "tcct-project-tran.firebaseapp.com",
+  databaseURL: "https://tcct-project-tran-default-rtdb.firebaseio.com",
+  projectId: "tcct-project-tran",
+  storageBucket: "tcct-project-tran.firebasestorage.app",
+  messagingSenderId: "826272441955",
+  appId: "1:826272441955:web:86a1f521ccee2e9d3e3a56",
+  measurementId: "G-D9EN3NEFD6"
+};
+
+// Initialize Firebase
+
+const app: FirebaseApp = initializeApp(firebaseConfig);
+
+const db = getDatabase(app);
+
+const auth = getAuth(app);
 
 
 // Lưu điểm vào Firestore
