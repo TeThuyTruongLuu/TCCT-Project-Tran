@@ -202,21 +202,6 @@ backgroundMusic.loop = false;
 backgroundMusic.volume = 0.2;
 
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDrRgPPldi8hy04k8aSy8r2wCy91RrgqUM",
-  authDomain: "tcct-project-tran.firebaseapp.com",
-  databaseURL: "https://tcct-project-tran-default-rtdb.firebaseio.com",
-  projectId: "tcct-project-tran",
-  storageBucket: "tcct-project-tran.firebasestorage.app",
-  messagingSenderId: "826272441955",
-  appId: "1:826272441955:web:86a1f521ccee2e9d3e3a56",
-  measurementId: "G-D9EN3NEFD6"
-};
-
-// Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
 // Khởi động bộ đếm thời gian
 function startTimer() {
     timerInterval = setInterval(() => {
@@ -332,6 +317,24 @@ function showFinalScore() {
     // Gọi hàm updateLeaderboard với các tham số đã tính toán
     updateLeaderboard(playerName, finalScore, totalTime);
 }
+
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDrRgPPldi8hy04k8aSy8r2wCy91RrgqUM",
+  authDomain: "tcct-project-tran.firebaseapp.com",
+  databaseURL: "https://tcct-project-tran-default-rtdb.firebaseio.com",
+  projectId: "tcct-project-tran",
+  storageBucket: "tcct-project-tran.firebasestorage.app",
+  messagingSenderId: "826272441955",
+  appId: "1:826272441955:web:86a1f521ccee2e9d3e3a56",
+  measurementId: "G-D9EN3NEFD6"
+};
+
+// Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+
 
 // Lưu điểm vào Firestore
 function updateLeaderboard(playerName, finalScore, totalTime) {
