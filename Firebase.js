@@ -1,3 +1,4 @@
+function initializeApp() {
 // Cấu hình Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyDrRgPPldi8hy04k8aSy8r2wCy91RrgqUM",
@@ -11,10 +12,9 @@ const firebaseConfig = {
 };
 
 // Khởi tạo Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const firestore = getFirestore(app);
-const db = firebase.firestore().collection("leaderboard");
+firebase.initializeApp(firebaseConfig);
+const firestore= firebase.firestore();
+const db = firestore.collection("leaderboard");
 
 // Hàm lưu điểm vào Firestore
 function updateLeaderboard(playerName, finalScore, totalTime) {
@@ -51,6 +51,6 @@ function displayLeaderboard() {
           console.log("Error getting leaderboard data: ", error);
       });
 }
-
+}
 // Xuất các hàm ra ngoài để sử dụng ở file khác
 //export { updateLeaderboard, displayLeaderboard };
