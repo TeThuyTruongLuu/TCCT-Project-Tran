@@ -312,13 +312,11 @@ function showFinalScore() {
 
     // Gọi hàm updateLeaderboard với các tham số đã tính toán
     updateLeaderboard(playerName, finalScore, totalTime);
-    displayLeaderboard();
 }
 
 
 // Gửi dữ liệu lên Google Sheets
 function updateLeaderboard(playerName, finalScore, totalTime) {
-	console.log("Sending data to leaderboard:", playerName, finalScore, totalTime);
     try {
         const response = await fetch("https://script.google.com/macros/s/AKfycbxoc7cSNgvy7S1Ev9isrlstHMK7bOJfm0aVjRg_ZXd2jclGWj9cMeZe197K3MonUzUO3g/exec", { 
             method: "POST",
@@ -329,9 +327,6 @@ function updateLeaderboard(playerName, finalScore, totalTime) {
                 totalTime: totalTime
             })
         });
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
         const result = await response.json();
         console.log("Cập nhật bảng xếp hạng:", result);
     } catch (error) {
