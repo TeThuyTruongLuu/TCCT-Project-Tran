@@ -320,7 +320,7 @@ var firebaseConfig = {
 // Khởi tạo Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore().collection("leaderboard");
-}
+
 
 // Hiển thị điểm cuối và cập nhật bảng xếp hạng
 function showFinalScore() {
@@ -375,7 +375,7 @@ function displayLeaderboard() {
           console.log("Error getting leaderboard data: ", error);
       });
 }
-
+}
 
 
 // Khởi động lại trò chơi
