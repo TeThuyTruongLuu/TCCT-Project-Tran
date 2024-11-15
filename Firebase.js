@@ -12,12 +12,12 @@ const firebaseConfig = {
 
 // Khởi tạo Firebase
 firebase.initializeApp(firebaseConfig);
-
-const database = firebase.firestore().collection("leaderboard");
+const db = getDatabase(app);
+const db = firebase.firestore().collection("leaderboard");
 
 // Hàm lưu điểm vào Firestore
 function updateLeaderboard(playerName, finalScore, totalTime) {
-    return database.add({
+    return db.add({
         playerName: playerName,
         finalScore: parseFloat(finalScore),
         totalTime: totalTime,
@@ -32,7 +32,7 @@ function updateLeaderboard(playerName, finalScore, totalTime) {
 
 // Hàm hiển thị bảng xếp hạng từ Firestore
 function displayLeaderboard() {
-    return database.orderBy("finalScore", "desc")
+    return db.orderBy("finalScore", "desc")
       .limit(200)
       .get()
       .then((querySnapshot) => {
