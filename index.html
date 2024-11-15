@@ -304,7 +304,7 @@ function resetCards(isMatch) {
     canFlip = true;
 }
 
-function initializeApp() {
+
 var firebaseConfig = {
   apiKey: "AIzaSyDrRgPPldi8hy04k8aSy8r2wCy91RrgqUM",
   authDomain: "tcct-project-tran.firebaseapp.com",
@@ -320,7 +320,7 @@ var firebaseConfig = {
 // Khởi tạo Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore().collection("leaderboard");
-}
+
 
 // Hiển thị điểm cuối và cập nhật bảng xếp hạng
 function showFinalScore() {
