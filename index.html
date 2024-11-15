@@ -304,6 +304,20 @@ function resetCards(isMatch) {
     canFlip = true;
 }
 
+// Hiển thị điểm cuối và cập nhật bảng xếp hạng
+function showFinalScore() {
+    stopTimer();
+    const totalTime = (minutes + seconds / 60).toFixed(2);
+    const finalScore = Math.max(0, 10 - totalTime).toFixed(1);
+
+    document.getElementById('result-player-name').textContent = `Tên người chơi: ${playerName}`;
+    document.getElementById('result-time').textContent = `Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    document.getElementById('result-score').textContent = `Điểm: ${finalScore}`;
+    document.getElementById('result-panel').style.display = 'block';
+
+    // Gọi hàm updateLeaderboard với các tham số đã tính toán
+    updateLeaderboard(playerName, finalScore, totalTime);
+}
 
 function initializeApp() {
 
@@ -319,13 +333,11 @@ var firebaseConfig = {
 };
 
 // Initialize Firebase
-
-
 firebase.initializeApp(firebaseConfig);
 const firestore= firebase.firestore();
 const db = firestore.collection("leaderboard");
 
-
+initializeApp();
 
 // Lưu điểm vào Firestore
 function updateLeaderboard(playerName, finalScore, totalTime) {
@@ -365,20 +377,6 @@ function displayLeaderboard() {
 }
 }
 
-// Hiển thị điểm cuối và cập nhật bảng xếp hạng
-function showFinalScore() {
-    stopTimer();
-    const totalTime = (minutes + seconds / 60).toFixed(2);
-    const finalScore = Math.max(0, 10 - totalTime).toFixed(1);
-
-    document.getElementById('result-player-name').textContent = `Tên người chơi: ${playerName}`;
-    document.getElementById('result-time').textContent = `Thời gian: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-    document.getElementById('result-score').textContent = `Điểm: ${finalScore}`;
-    document.getElementById('result-panel').style.display = 'block';
-
-    // Gọi hàm updateLeaderboard với các tham số đã tính toán
-    updateLeaderboard(playerName, finalScore, totalTime);
-}
 
 // Khởi động lại trò chơi
 window.restartGame = function restartGame() {
