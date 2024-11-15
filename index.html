@@ -304,7 +304,6 @@ function resetCards(isMatch) {
     canFlip = true;
 }
 
-initializeApp();
 
 function initializeApp() {
 	var firebaseConfig = {
@@ -323,6 +322,9 @@ function initializeApp() {
 	firebase.initializeApp(firebaseConfig);
 	db = firebase.firestore().collection("leaderboard");
 }
+
+initializeApp();
+
 // Lưu điểm vào Firestore
 function updateLeaderboard(playerName, finalScore, totalTime) {
     db.collection("leaderboard").add({
