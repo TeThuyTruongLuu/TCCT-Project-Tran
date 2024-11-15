@@ -318,8 +318,8 @@ function showFinalScore() {
     // Gọi hàm updateLeaderboard với các tham số đã tính toán
     updateLeaderboard(playerName, finalScore, totalTime);
 }
-
-const firebaseConfig = {
+function initializeApp() {
+var firebaseConfig = {
   apiKey: "AIzaSyDrRgPPldi8hy04k8aSy8r2wCy91RrgqUM",
   authDomain: "tcct-project-tran.firebaseapp.com",
   databaseURL: "https://tcct-project-tran-default-rtdb.firebaseio.com",
