@@ -1,5 +1,5 @@
 // Cấu hình Firebase
-var firebaseConfig = {
+const firebaseConfig = {
     apiKey: "AIzaSyDrRgPPldi8hy04k8aSy8r2wCy91RrgqUM",
     authDomain: "tcct-project-tran.firebaseapp.com",
     databaseURL: "https://tcct-project-tran-default-rtdb.firebaseio.com",
@@ -12,11 +12,12 @@ var firebaseConfig = {
 
 // Khởi tạo Firebase
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore().collection("leaderboard");
+
+const database = firebase.firestore().collection("leaderboard");
 
 // Hàm lưu điểm vào Firestore
 function updateLeaderboard(playerName, finalScore, totalTime) {
-    return db.add({
+    return database.add({
         playerName: playerName,
         finalScore: parseFloat(finalScore),
         totalTime: totalTime,
@@ -31,7 +32,7 @@ function updateLeaderboard(playerName, finalScore, totalTime) {
 
 // Hàm hiển thị bảng xếp hạng từ Firestore
 function displayLeaderboard() {
-    return db.orderBy("finalScore", "desc")
+    return database.orderBy("finalScore", "desc")
       .limit(200)
       .get()
       .then((querySnapshot) => {
