@@ -315,13 +315,13 @@ var firebaseConfig = {
   appId: "1:826272441955:web:86a1f521ccee2e9d3e3a56",
   measurementId: "G-D9EN3NEFD6"
 };
-}
 
-initializeApp();
 
 // Khởi tạo Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore().collection("leaderboard");
+}
+initializeApp();
 
 // Lưu điểm vào Firestore
 function updateLeaderboard(playerName, finalScore, totalTime) {
