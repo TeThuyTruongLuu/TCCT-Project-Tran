@@ -335,6 +335,7 @@ function updateLeaderboard(playerName, finalScore, totalTime) {
         console.error("Error adding score: ", error);
     });
 }
+window.updateLeaderboard = updateLeaderboard;
 
 // Hiển thị bảng xếp hạng từ Firestore
 function displayLeaderboard() {
@@ -358,7 +359,7 @@ function displayLeaderboard() {
       });
 }
 }
-window.updateLeaderboard = updateLeaderboard;
+
 window.displayLeaderboard = displayLeaderboard;
 
 // Hiển thị điểm cuối và cập nhật bảng xếp hạng
