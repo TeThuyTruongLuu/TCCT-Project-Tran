@@ -319,6 +319,7 @@ function showFinalScore() {
     updateLeaderboard(playerName, finalScore, totalTime);
 }
 function initializeApp() {
+
 var firebaseConfig = {
   apiKey: "AIzaSyDrRgPPldi8hy04k8aSy8r2wCy91RrgqUM",
   authDomain: "tcct-project-tran.firebaseapp.com",
@@ -333,7 +334,8 @@ var firebaseConfig = {
 // Initialize Firebase
 
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const firestore= firebase.firestore();
+const db = firestore.collection("leaderboard");
 
 
 
