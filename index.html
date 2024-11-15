@@ -318,6 +318,9 @@ function showFinalScore() {
     // Gọi hàm updateLeaderboard với các tham số đã tính toán
     updateLeaderboard(playerName, finalScore, totalTime);
 }
+
+let db;
+
 function initializeApp() {
 
 var firebaseConfig = {
@@ -335,9 +338,10 @@ var firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const firestore= firebase.firestore();
-const db = firestore.collection("leaderboard");
+db = firestore.collection("leaderboard");
 }
 
+initializeApp();
 
 // Lưu điểm vào Firestore
 function updateLeaderboard(playerName, finalScore, totalTime) {
