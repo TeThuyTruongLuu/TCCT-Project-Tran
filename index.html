@@ -320,7 +320,7 @@ var firebaseConfig = {
 // Khởi tạo Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore().collection("leaderboard");
-
+}
 
 // Hiển thị điểm cuối và cập nhật bảng xếp hạng
 function showFinalScore() {
@@ -393,7 +393,7 @@ window.viewLeaderboard = function viewLeaderboard() {
     document.getElementById('result-panel').style.display = 'none';
     document.querySelector('.leaderboard-container').style.display = 'block';
     displayLeaderboard();
-}}
+}
 </script>
 </body>
 </html>
