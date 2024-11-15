@@ -51,4 +51,4 @@ function displayLeaderboard() {
 }
 
 // Xuất các hàm ra ngoài để sử dụng ở file khác
-export { updateLeaderboard, displayLeaderboard };
+//export { updateLeaderboard, displayLeaderboard };
