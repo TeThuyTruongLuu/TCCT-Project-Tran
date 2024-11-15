@@ -1,5 +1,5 @@
 // Cấu hình Firebase
-var firebaseConfig = {
+const firebaseConfig = {
     apiKey: "AIzaSyDrRgPPldi8hy04k8aSy8r2wCy91RrgqUM",
     authDomain: "tcct-project-tran.firebaseapp.com",
     databaseURL: "https://tcct-project-tran-default-rtdb.firebaseio.com",
@@ -11,7 +11,7 @@ var firebaseConfig = {
 };
 
 // Khởi tạo Firebase
-firebase.initializeApp(firebaseConfig);
+const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore().collection("leaderboard");
 
 // Hàm lưu điểm vào Firestore
