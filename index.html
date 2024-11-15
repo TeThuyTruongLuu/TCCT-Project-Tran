@@ -251,19 +251,39 @@
 	}
 
 
-async function updateLeaderboard(name, score, time) {
-    try {
-        const response = await fetch("https://script.google.com/macros/s/AKfycbxsmHH0wAFU1AnyBc3AcCZewFgMTAqrm6XpO1F1Upzo--4NLnHwofZi_UwD5EhvODtNrA/exec", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: name, score: score, time: time })
-        });
-        const result = await response.json();
-        console.log("Cập nhật bảng xếp hạng:", result);
-    } catch (error) {
-        console.error("Lỗi cập nhật bảng xếp hạng:", error);
-    }
-}
+	async function updateLeaderboard(name, score, time) {
+		try {
+			const response = await fetch("https://script.google.com/macros/s/AKfycbxsmHH0wAFU1AnyBc3AcCZewFgMTAqrm6XpO1F1Upzo--4NLnHwofZi_UwD5EhvODtNrA/exec", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ name: name, score: score, time: time })
+			});
+			const result = await response.json();
+			console.log("Cập nhật bảng xếp hạng:", result);
+		} catch (error) {
+			console.error("Lỗi cập nhật bảng xếp hạng:", error);
+		}
+	}
+	async function displayLeaderboard() {
+		try {
+			// Gửi yêu cầu GET tới Apps Script để lấy dữ liệu bảng xếp hạng
+			const response = await fetch("https://script.google.com/macros/s/AKfycbxsmHH0wAFU1AnyBc3AcCZewFgMTAqrm6XpO1F1Upzo--4NLnHwofZi_UwD5EhvODtNrA/exec");
+			const leaderboard = await response.json();
+
+			// Lấy phần tử HTML chứa bảng xếp hạng và làm trống nội dung cũ
+			const leaderboardElement = document.getElementById("leaderboard");
+			leaderboardElement.innerHTML = "";
+
+			// Duyệt qua từng mục trong bảng xếp hạng và hiển thị
+			leaderboard.forEach((entry, index) => {
+				const li = document.createElement("li");
+				li.textContent = `#${index + 1}: ${entry.name} - ${entry.score} điểm - ${entry.time} phút`;
+				leaderboardElement.appendChild(li);
+			});
+		} catch (error) {
+			console.error("Lỗi khi lấy dữ liệu bảng xếp hạng:", error);
+		}
+	}
 
 
 
