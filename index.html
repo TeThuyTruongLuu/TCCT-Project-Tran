@@ -170,6 +170,9 @@
 		</div>
 	</div>
 
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-analytics.js"></script>
+
 <script>
 // Biến toàn cục
 let playerName = "";
@@ -198,13 +201,7 @@ const wrongSound = new Audio('musics/wrong.m4a');
 backgroundMusic.loop = false;
 backgroundMusic.volume = 0.2;
 
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-analytics.js";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+
 const firebaseConfig = {
   apiKey: "AIzaSyDrRgPPldi8hy04k8aSy8r2wCy91RrgqUM",
   authDomain: "tcct-project-tran.firebaseapp.com",
@@ -216,10 +213,9 @@ const firebaseConfig = {
   measurementId: "G-D9EN3NEFD6"
 };
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-
+// Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
 // Khởi động bộ đếm thời gian
 function startTimer() {
