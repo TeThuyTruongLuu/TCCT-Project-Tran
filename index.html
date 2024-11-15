@@ -338,7 +338,7 @@ async function updateLeaderboard(playerName, finalScore, totalTime) {
 // Hiển thị bảng xếp hạng
 async function displayLeaderboard() {
     try {
-        const response = await fetch("https://script.google.com/macros/s/AKfycbxsmHH0wAFU1AnyBc3AcCZewFgMTAqrm6XpO1F1Upzo--4NLnHwofZi_UwD5EhvODtNrA/exec");
+        const response = await fetch("https://script.google.com/macros/s/AKfycbxoc7cSNgvy7S1Ev9isrlstHMK7bOJfm0aVjRg_ZXd2jclGWj9cMeZe197K3MonUzUO3g/exec");
         const leaderboard = await response.json();
 
         const leaderboardElement = document.getElementById("leaderboard");
