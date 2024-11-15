@@ -11,7 +11,9 @@ const firebaseConfig = {
 };
 
 // Khởi tạo Firebase
-const app = firebase.initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const firestore = getFirestore(app);
 const db = firebase.firestore().collection("leaderboard");
 
 // Hàm lưu điểm vào Firestore
