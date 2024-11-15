@@ -34,8 +34,8 @@
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             grid-gap: 10px;
-            width: 90vw;
-            max-width: 600px;
+            width: 120vw;
+            max-width: 800px;
             display: none;
         }
 
@@ -54,7 +54,7 @@
             transform: translate(-50%, -50%);
             z-index: 10;
             color: #1F271B;
-            max-width: 90%;
+            max-width: 100%;
             box-sizing: border-box;
         }
         #login-modal h2 {
@@ -184,11 +184,6 @@ let matchedPairs = 0;
 const images = [
     { src: "images/Cá Dụ 1.png", pairId: "Dụ" }, { src: "images/Dụ 2.png", pairId: "Dụ" },
     { src: "images/Cáo Diệp 1.png", pairId: "Diệp" }, { src: "images/Diệp.png", pairId: "Diệp" },
-    { src: "images/Cáo tuyết Lam 1.png", pairId: "Lam" }, { src: "images/Lam.png", pairId: "Lam" },
-    { src: "images/Chuột Duệ 1.png", pairId: "Duệ" }, { src: "images/Duệ.png", pairId: "Duệ" },
-    { src: "images/Corgi Lư 1.png", pairId: "Lư" }, { src: "images/Lư.png", pairId: "Lư" },
-    { src: "images/Cụt Chu 1.png", pairId: "Chu" }, { src: "images/Chu.png", pairId: "Chu" },
-    { src: "images/Hamster Tranh 1.png", pairId: "Tranh" }, { src: "images/Tranh.png", pairId: "Tranh" },
 ];
 
 // Xáo trộn hình ảnh
@@ -224,14 +219,14 @@ document.getElementById('start-button').addEventListener('click', () => {
     const codeInput = document.getElementById('code-input').value.trim();
     const nicknameInput = document.getElementById('nickname-input').value.trim();
 
-    if (codeInput === "TCCT" && nicknameInput) {
+    if (codeInput === "Tran" && nicknameInput) {
         playerName = nicknameInput;
         document.getElementById('login-modal').style.display = 'none';
         document.querySelector('.game-board').style.display = 'grid';
         backgroundMusic.play();
         startTimer();
     } else {
-        alert("Nhập đúng mã 'TCCT' và tên hợp lệ nha bồ ơi.");
+        alert("Nhập đúng mã 'Tran' và tên hợp lệ nha bồ ơi.");
     }
 });
 
@@ -319,22 +314,6 @@ function showFinalScore() {
     displayLeaderboard();
 }
 
-// Hàm doPost trong Google Apps Script
-function doPost(e) {
-    // Mở bảng tính bằng ID của Google Sheets và chọn bảng "Leaderboard"
-    const sheet = SpreadsheetApp.openById("14GLVwg9t6VpdS8n9ZDhWPyPS9gAUZyCyNUytcmS1xWA").getSheetByName("Leaderboard");
-
-    // Parse dữ liệu JSON từ yêu cầu POST
-    const data = JSON.parse(e.postData.contents);
-
-    // Thêm hàng mới vào bảng với các giá trị từ dữ liệu JSON
-    sheet.appendRow([data.playerName, data.finalScore, data.totalTime]);
-
-    // Trả về phản hồi JSON cho client
-    return ContentService
-        .createTextOutput(JSON.stringify({ status: "success" }))
-        .setMimeType(ContentService.MimeType.JSON);
-}
 
 // Gửi dữ liệu lên Google Sheets
 async function updateLeaderboard(playerName, finalScore, totalTime) {
@@ -374,7 +353,7 @@ window.restartGame = function restartGame() {
 }
 
 // Hiển thị bảng xếp hạng khi nhấn nút
-window.viewLeaderboard = function viewLeaderboard() {
+window.viewLeaderboard = function displayLeaderboard() {
     document.getElementById('result-panel').style.display = 'none';
     document.querySelector('.leaderboard-container').style.display = 'block';
     displayLeaderboard();
