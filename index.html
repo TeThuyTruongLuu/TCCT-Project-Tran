@@ -319,8 +319,6 @@ function showFinalScore() {
     updateLeaderboard(playerName, finalScore, totalTime);
 }
 
-let db;
-
 function initializeApp() {
 
 var firebaseConfig = {
@@ -336,12 +334,12 @@ var firebaseConfig = {
 
 // Initialize Firebase
 
+
 firebase.initializeApp(firebaseConfig);
 const firestore= firebase.firestore();
-db = firestore.collection("leaderboard");
-}
+const db = firestore.collection("leaderboard");
 
-initializeApp();
+
 
 // Lưu điểm vào Firestore
 function updateLeaderboard(playerName, finalScore, totalTime) {
@@ -379,7 +377,7 @@ function displayLeaderboard() {
           console.log("Error getting leaderboard data: ", error);
       });
 }
-
+}
 
 // Khởi động lại trò chơi
 window.restartGame = function restartGame() {
