@@ -289,11 +289,7 @@ let matchedPairs = 0;
 const images = [
     { src: "images/Cá Dụ 1.png", pairId: "Dụ" }, { src: "images/Dụ 2.png", pairId: "Dụ" },
     { src: "images/Cáo Diệp 1.png", pairId: "Diệp" }, { src: "images/Diệp.png", pairId: "Diệp" },
-	{ src: "images/Cáo tuyết Lam 1.png", pairId: "Lam" }, { src: "images/Lam.png", pairId: "Lam" },
-    { src: "images/Chuột Duệ 1.png", pairId: "Duệ" }, { src: "images/Duệ.png", pairId: "Duệ" },
-    { src: "images/Corgi Lư 1.png", pairId: "Lư" }, { src: "images/Lư.png", pairId: "Lư" },
-    { src: "images/Cụt Chu 1.png", pairId: "Chu" }, { src: "images/Chu.png", pairId: "Chu" },
-    { src: "images/Hamster Tranh 1.png", pairId: "Tranh" }, { src: "images/Tranh.png", pairId: "Tranh" },
+
 ];
 
 // Xáo trộn hình ảnh
@@ -422,12 +418,13 @@ function resetCards(isMatch) {
 }
 
 // Hiển thị điểm cuối và cập nhật bảng xếp hạng
+// Hiển thị điểm cuối và cập nhật bảng xếp hạng
 function showFinalScore() {
     stopTimer();
-    const totalTime = `${minutes}:${seconds.toString().padStart(2, '0')}`; // Chuyển đổi thời gian thành chuỗi, ví dụ "0:06"
+    const totalTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
     // Lấy toàn bộ dữ liệu từ cơ sở dữ liệu để xác định thứ hạng
-    db.orderBy("totalTime", "asc")
+    db.orderBy("finalScore", "desc").orderBy("totalTime", "asc")
         .get()
         .then((querySnapshot) => {
             const scores = [];
@@ -435,16 +432,17 @@ function showFinalScore() {
                 scores.push({ ...doc.data(), id: doc.id });
             });
 
-            // Loại bỏ tên trùng lặp và giữ lại điểm tốt nhất cho mỗi người chơi
+            // Loại bỏ tên trùng lặp và giữ lại điểm cao nhất cho mỗi người chơi
             const uniqueScores = {};
             scores.forEach(score => {
-                if (!uniqueScores[score.playerName] || uniqueScores[score.playerName].totalTime > score.totalTime) {
+                if (!uniqueScores[score.playerName] || uniqueScores[score.playerName].finalScore < score.finalScore) {
                     uniqueScores[score.playerName] = score;
                 }
             });
 
-            // Chuyển object thành mảng và sắp xếp theo thời gian
-            const sortedScores = Object.values(uniqueScores).sort((a, b) => a.totalTime.localeCompare(b.totalTime));
+            // Chuyển `uniqueScores` thành mảng và sắp xếp theo điểm và thời gian
+            const sortedScores = Object.values(uniqueScores)
+                .sort((a, b) => b.finalScore - a.finalScore || a.totalTime.localeCompare(b.totalTime));
 
             // Tìm thứ hạng của người chơi hiện tại
             const playerRank = sortedScores.findIndex(score => score.playerName === playerName) + 1;
@@ -458,19 +456,22 @@ function showFinalScore() {
             else if (playerRank <= 10) playerScore = 6;
             else playerScore = 5;
 
+            // Hiển thị kết quả cho người chơi
             document.getElementById('result-player-name').textContent = `Tên người chơi: ${playerName}`;
             document.getElementById('result-time').textContent = `Thời gian: ${totalTime}`;
             document.getElementById('result-score').textContent = `Điểm: ${playerScore}`;
+            document.getElementById('result-rank').textContent = `Hạng: ${playerRank}`;
             document.getElementById('result-panel').style.display = 'block';
 
-            document.getElementById('result-rank').textContent = `Hạng: ${playerRank}`;
-
+            // Cập nhật bảng xếp hạng
             updateLeaderboard(playerName, totalTime, playerScore);
         })
         .catch((error) => {
             console.error("Error calculating leaderboard: ", error);
         });
 }
+
+
 
 
 // Khởi động lại trò chơi

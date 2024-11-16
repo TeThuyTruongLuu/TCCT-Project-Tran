@@ -19,10 +19,11 @@ function initializeApp() {
     const firestore = firebase.firestore();
     db = firestore.collection("leaderboard");  // Gán giá trị cho biến toàn cục
 
-	// Hàm lưu điểm vào Firestore và chỉ giữ lại 3 kết quả cao nhất của mỗi người chơi
+// Hàm lưu điểm vào Firestore và chỉ giữ lại 3 kết quả cao nhất của mỗi người chơi
+// Hàm lưu điểm vào Firestore và chỉ giữ lại 3 kết quả cao nhất của mỗi người chơi
 	window.updateLeaderboard = async function(playerName, totalTime, playerScore) {
 		const leaderboardRef = db.collection('leaderboard');
-		
+
 		try {
 			// 1. Tìm tất cả các kết quả của người chơi hiện tại
 			const snapshot = await leaderboardRef.where('playerName', '==', playerName).get();
@@ -39,18 +40,30 @@ function initializeApp() {
 				finalScore: playerScore
 			});
 
-			// 3. Sắp xếp các kết quả theo điểm từ cao đến thấp
-			playerScores.sort((a, b) => b.finalScore - a.finalScore || a.totalTime - b.totalTime);
+			// 3. Sắp xếp các kết quả theo điểm từ cao đến thấp, nếu điểm bằng nhau thì sắp xếp theo thời gian
+			playerScores.sort((a, b) => b.finalScore - a.finalScore || a.totalTime.localeCompare(b.totalTime));
 
 			// 4. Giữ lại 3 kết quả cao nhất và xác định các kết quả cần xóa
 			const topScores = playerScores.slice(0, 3); // 3 kết quả cao nhất
 			const scoresToDelete = playerScores.slice(3); // Các kết quả còn lại để xóa
 
-			// 5. Lưu các kết quả mới vào Firestore (nếu chưa có trong cơ sở dữ liệu)
+			// 5. Lấy thời gian hiện tại để tạo tên tài liệu duy nhất
+			const now = new Date();
+			const day = String(now.getDate()).padStart(2, '0'); // Ngày
+			const month = String(now.getMonth() + 1).padStart(2, '0'); // Tháng
+			const hours = String(now.getHours()).padStart(2, '0'); // Giờ
+			const minutes = String(now.getMinutes()).padStart(2, '0'); // Phút
+			const seconds = String(now.getSeconds()).padStart(2, '0'); // Giây
+
+			// Tạo tên document theo định dạng: playerName_daymonth_hours.minutes.seconds
+			const documentName = `${playerName}_${day}${month}_${hours}.${minutes}.${seconds}`;
+
+			// 6. Lưu các kết quả mới vào Firestore (nếu chưa có trong cơ sở dữ liệu)
 			for (const score of topScores) {
 				if (!score.id) {
 					// Nếu kết quả này chưa tồn tại (không có `id`), thêm mới vào Firestore
-					await leaderboardRef.add({
+					// Sử dụng `documentName` duy nhất cho lần chơi mới
+					await leaderboardRef.doc(documentName).set({
 						playerName: score.playerName,
 						totalTime: score.totalTime,
 						finalScore: score.finalScore
@@ -58,7 +71,7 @@ function initializeApp() {
 				}
 			}
 
-			// 6. Xóa các kết quả thấp hơn (trong scoresToDelete)
+			// 7. Xóa các kết quả thấp hơn (trong scoresToDelete)
 			for (const score of scoresToDelete) {
 				if (score.id) {
 					// Xóa nếu có `id` (tức là đã tồn tại trong Firestore)
@@ -76,13 +89,13 @@ function initializeApp() {
 
 // Hàm hiển thị bảng xếp hạng từ Firestore
 window.displayLeaderboard = function() {
-    return db.orderBy("finalScore", "desc")
+    return db.orderBy("finalScore", "desc").orderBy("totalTime", "asc")
         .get()
         .then((querySnapshot) => {
             const leaderboardElement = document.getElementById("leaderboard");
             leaderboardElement.innerHTML = "<tr><th>Tên</th><th>Thời gian hoàn thành</th><th>Điểm</th></tr>";
 
-            // Tạo object để lưu điểm cao nhất của mỗi người
+            // Tạo object để lưu điểm cao nhất của mỗi người chơi
             const uniquePlayers = {};
 
             // Loại bỏ các tên trùng lặp và chỉ giữ điểm cao nhất
@@ -93,9 +106,9 @@ window.displayLeaderboard = function() {
                 }
             });
 
-            // Chuyển object uniquePlayers thành mảng và sắp xếp theo điểm
+            // Chuyển object `uniquePlayers` thành mảng và sắp xếp theo điểm và thời gian
             const leaderboardData = Object.values(uniquePlayers)
-                .sort((a, b) => b.finalScore - a.finalScore)
+                .sort((a, b) => b.finalScore - a.finalScore || a.totalTime.localeCompare(b.totalTime))
                 .slice(0, 10); // Chỉ lấy top 10
 
             // Tính điểm cho từng vị trí
@@ -122,6 +135,7 @@ window.displayLeaderboard = function() {
             console.log("Error getting leaderboard data: ", error);
         });
 }
+
 
 // Đảm bảo initializeApp được gọi khi trang web load
 initializeApp();
