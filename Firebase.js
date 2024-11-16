@@ -20,7 +20,7 @@ function initializeApp() {
     db = firestore.collection("leaderboard"); // Gán db trực tiếp là collection "leaderboard"
 }
 
-// Hàm xác định hạng cho người chơi mới dựa trên thời gian hoàn thành của họ
+// Hàm xác định hạng cho người chơi mới dựa trên thời gian hoàn thành của họ (dựa trên unique totalTime)
 async function determineRank(playerName, newTotalTime) {
     const allScoresSnapshot = await db.orderBy('totalTime', 'asc').get(); // Sắp xếp từ nhanh nhất đến chậm nhất
     const uniqueTimes = new Set(); // Tập hợp lưu trữ các thời gian hoàn thành duy nhất
@@ -53,7 +53,6 @@ async function determineRank(playerName, newTotalTime) {
 
 
 
-
 // Hàm lưu điểm vào Firestore nếu người chơi đạt kỷ lục mới và hiển thị lại bảng xếp hạng ngay sau đó
 window.updateLeaderboard = async function(playerName, newTotalTime) {
     const leaderboardRef = db;
@@ -67,8 +66,37 @@ window.updateLeaderboard = async function(playerName, newTotalTime) {
             existingRecord = { id: doc.id, ...doc.data() };
         });
 
-        // 2. Kiểm tra thời gian kỷ lục cũ của người chơi
-        if (existingRecord && compareTimeStrings(existingRecord.totalTime, newTotalTime) <= 0) {
+        // 2. Nếu người chơi là mới hoàn toàn (không có bản ghi trước đó)
+        if (!existingRecord) {
+            console.log("Người chơi mới, thêm kỷ lục đầu tiên.");
+
+            // 3. Xác định hạng cho người chơi mới
+            const rank = await determineRank(playerName, newTotalTime);
+
+            // 4. Tính điểm dựa trên thứ hạng
+            const points = getPointsForRank(rank);
+
+            // 5. Thêm bản ghi mới vào Firestore cho người chơi mới
+            await leaderboardRef.add({
+                playerName,
+                totalTime: newTotalTime,
+                points,
+                rank
+            });
+
+            // Trả về kết quả thành công cho người chơi mới
+            return {
+                success: true,
+                playerName,
+                newTotalTime,
+                points,
+                rank,
+                message: "Đã thêm kỷ lục đầu tiên cho người chơi mới."
+            };
+        }
+
+        // 3. Kiểm tra thời gian kỷ lục cũ của người chơi (nếu người chơi đã có kỷ lục)
+        if (compareTimeStrings(existingRecord.totalTime, newTotalTime) <= 0) {
             console.log("Thời gian hoàn thành mới dài hơn hoặc bằng, không cập nhật.");
             await displayLeaderboard(); // Hiển thị lại bảng xếp hạng để đảm bảo cập nhật
 
@@ -82,34 +110,39 @@ window.updateLeaderboard = async function(playerName, newTotalTime) {
             };
         }
 
-        // 3. Xác định hạng cho người chơi mới
+        // 4. Xác định hạng cho người chơi nếu thời gian mới nhanh hơn
         const rank = await determineRank(playerName, newTotalTime);
 
-        // 4. Tính điểm dựa trên thứ hạng
+        // 5. Tính điểm dựa trên thứ hạng
         const points = getPointsForRank(rank);
 
-        // 5. Thêm hoặc cập nhật dữ liệu mới vào Firestore
-        if (existingRecord) {
-            await leaderboardRef.doc(existingRecord.id).update({
-                totalTime: newTotalTime,
-                points,
-                rank
-            });
-        } else {
-            await leaderboardRef.add({
-                playerName,
-                totalTime: newTotalTime,
-                points,
-                rank
-            });
-        }
+        // 6. Cập nhật bản ghi của người chơi trong Firestore
+        await leaderboardRef.doc(existingRecord.id).update({
+            totalTime: newTotalTime,
+            points,
+            rank
+        });
 
         console.log("Đã cập nhật leaderboard với kỷ lục mới.");
         await displayLeaderboard(); // Hiển thị lại bảng xếp hạng sau khi cập nhật
+
+        // Trả về kết quả thành công khi cập nhật kỷ lục mới
+        return {
+            success: true,
+            playerName,
+            newTotalTime,
+            points,
+            rank,
+            message: "Đã cập nhật kỷ lục mới thành công."
+        };
     } catch (error) {
         console.error("Error updating leaderboard: ", error);
+        return { success: false, error: error.message };
     }
-}
+};
+
+
+
 
 // Hàm tính điểm dựa trên thứ hạng
 function getPointsForRank(rank) {

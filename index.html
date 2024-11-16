@@ -298,11 +298,7 @@ let matchedPairs = 0;
 const images = [
     { src: "images/Cá Dụ 1.png", pairId: "Dụ" }, { src: "images/Dụ 2.png", pairId: "Dụ" },
     { src: "images/Cáo Diệp 1.png", pairId: "Diệp" }, { src: "images/Diệp.png", pairId: "Diệp" },
-	{ src: "images/Cáo tuyết Lam 1.png", pairId: "Lam" }, { src: "images/Lam.png", pairId: "Lam" },
-    { src: "images/Chuột Duệ 1.png", pairId: "Duệ" }, { src: "images/Duệ.png", pairId: "Duệ" },
-    { src: "images/Corgi Lư 1.png", pairId: "Lư" }, { src: "images/Lư.png", pairId: "Lư" },
-    { src: "images/Cụt Chu 1.png", pairId: "Chu" }, { src: "images/Chu.png", pairId: "Chu" },
-    { src: "images/Hamster Tranh 1.png", pairId: "Tranh" }, { src: "images/Tranh.png", pairId: "Tranh" },
+
 ];
 
 // Xáo trộn hình ảnh
@@ -400,6 +396,49 @@ gameGrid.forEach(item => {
     });
 });
 
+// Khởi động trò chơi lại để đảm bảo các biến đã được đặt lại
+document.getElementById('ready-button').addEventListener('click', () => {
+    // Đặt lại các biến
+    matchedPairs = 0; // Đặt lại số cặp đã ghép được
+    firstCard = null;
+    secondCard = null;
+    canFlip = true;
+
+    // Lật úp lại tất cả các thẻ
+    document.querySelectorAll('.card').forEach(card => {
+        card.classList.remove('flip');
+    });
+
+    // Ẩn tất cả lớp overlay trên mặt trước của thẻ và ghi nhớ
+    document.querySelectorAll('.card-overlay').forEach(overlay => {
+        overlay.style.display = 'none';
+    });
+    document.getElementById('memory-instructions').style.display = 'none';
+
+    // Xáo trộn lại vị trí các thẻ
+    shuffleCards();
+
+    // Bắt đầu nhạc nền và đếm giờ
+    backgroundMusic.play();
+    startTimer();
+    document.getElementById('ready-button').style.display = 'none';
+});
+
+// Hàm xáo trộn thẻ (không thay đổi sự kiện của thẻ)
+function shuffleCards() {
+    const gameBoard = document.querySelector('.game-board');
+    const cards = Array.from(gameBoard.children); // Lấy tất cả thẻ hiện tại thành mảng
+
+    // Xóa tất cả thẻ khỏi giao diện
+    cards.forEach(card => gameBoard.removeChild(card));
+
+    // Xáo trộn mảng thẻ
+    const shuffledCards = cards.sort(() => 0.5 - Math.random());
+
+    // Thêm các thẻ đã xáo trộn lại vào gameBoard
+    shuffledCards.forEach(card => gameBoard.appendChild(card));
+}
+
 // Kiểm tra ghép cặp
 function checkMatch() {
     canFlip = false;
@@ -410,6 +449,7 @@ function checkMatch() {
         correctSound.play();
         resetCards(true);
 
+        // Kiểm tra nếu tất cả các cặp đã được ghép
         if (matchedPairs === totalPairs) {
             setTimeout(showFinalScore, 500);
         }
@@ -430,9 +470,11 @@ function resetCards(isMatch) {
     canFlip = true;
 }
 
+
 // Hiển thị điểm cuối và cập nhật bảng xếp hạng
 async function showFinalScore() {
     stopTimer();
+    console.log("showFinalScore is called"); // Log để kiểm tra xem hàm có được gọi
 
     const newTotalTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
@@ -461,6 +503,7 @@ async function showFinalScore() {
         document.getElementById('result-panel').style.display = 'block';
     }
 }
+
 
 
 
@@ -506,8 +549,6 @@ function compareTimeStrings(timeA, timeB) {
 }
 
 
-
-
 // Khởi động lại trò chơi
 window.restartGame = function restartGame() {
     location.reload();
@@ -526,42 +567,6 @@ window.viewLeaderboard = function viewLeaderboard() {
     displayLeaderboard();
 }
 
-// Sự kiện nhấn nút "Sẵn sàng" để bắt đầu chơi
-document.getElementById('ready-button').addEventListener('click', () => {
-    // Lật úp lại tất cả các thẻ
-    document.querySelectorAll('.card').forEach(card => {
-        card.classList.remove('flip');
-    });
-
-    // Ẩn tất cả lớp overlay trên mặt trước của thẻ và ghi nhớ
-    document.querySelectorAll('.card-overlay').forEach(overlay => {
-        overlay.style.display = 'none';
-    });
-    document.getElementById('memory-instructions').style.display = 'none';
-
-    // Xáo trộn lại vị trí các thẻ
-    shuffleCards();
-
-    // Bắt đầu nhạc nền và đếm giờ
-    backgroundMusic.play();
-    startTimer();
-    document.getElementById('ready-button').style.display = 'none';
-});
-
-// Hàm xáo trộn thẻ
-function shuffleCards() {
-    const gameBoard = document.querySelector('.game-board');
-    const cards = Array.from(gameBoard.children); // Lấy tất cả thẻ hiện tại thành mảng
-
-    // Xóa tất cả thẻ khỏi giao diện
-    cards.forEach(card => gameBoard.removeChild(card));
-
-    // Xáo trộn mảng thẻ
-    const shuffledCards = cards.sort(() => 0.5 - Math.random());
-
-    // Thêm các thẻ đã xáo trộn lại vào gameBoard
-    shuffledCards.forEach(card => gameBoard.appendChild(card));
-}
 
 
 </script>
