@@ -17,12 +17,14 @@ function initializeApp() {
     // Khởi tạo Firebase
     firebase.initializeApp(firebaseConfig);
     const firestore = firebase.firestore();
-    db = firestore.collection("leaderboard");  // Gán giá trị cho biến toàn cục
+    db = firestore.collection("leaderboard"); // Gán db trực tiếp là collection "leaderboard"
+}
 
 // Hàm lưu điểm vào Firestore và chỉ giữ lại 3 kết quả cao nhất của mỗi người chơi
 window.updateLeaderboard = async function(playerName, totalTime, playerScore) {
-    const leaderboardRef = db.collection('leaderboard');
-    
+    // Không cần gọi lại `db.collection('leaderboard')`
+    const leaderboardRef = db;
+
     try {
         // 1. Tìm tất cả các kết quả của người chơi hiện tại
         const snapshot = await leaderboardRef.where('playerName', '==', playerName).get();
@@ -70,8 +72,6 @@ window.updateLeaderboard = async function(playerName, totalTime, playerScore) {
     } catch (error) {
         console.error("Error updating leaderboard: ", error);
     }
-}
-
 }
 
 // Hàm hiển thị bảng xếp hạng từ Firestore
