@@ -8,7 +8,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Matching Game</title>
 <style>
-    /* Tổng thể giao diện */
     body {
         display: flex;
         flex-direction: column;
@@ -41,8 +40,7 @@
         grid-gap: 10px;
         width: 80vw;
         max-width: 100vw;
-        display: none;
-		margin: 0 auto;		
+        display: none;	
 		justify-content: center;
     }
 
@@ -285,6 +283,11 @@ let matchedPairs = 0;
 const images = [
     { src: "images/Cá Dụ 1.png", pairId: "Dụ" }, { src: "images/Dụ 2.png", pairId: "Dụ" },
     { src: "images/Cáo Diệp 1.png", pairId: "Diệp" }, { src: "images/Diệp.png", pairId: "Diệp" },
+	{ src: "images/Cáo tuyết Lam 1.png", pairId: "Lam" }, { src: "images/Lam.png", pairId: "Lam" },
+    { src: "images/Chuột Duệ 1.png", pairId: "Duệ" }, { src: "images/Duệ.png", pairId: "Duệ" },
+    { src: "images/Corgi Lư 1.png", pairId: "Lư" }, { src: "images/Lư.png", pairId: "Lư" },
+    { src: "images/Cụt Chu 1.png", pairId: "Chu" }, { src: "images/Chu.png", pairId: "Chu" },
+    { src: "images/Hamster Tranh 1.png", pairId: "Tranh" }, { src: "images/Tranh.png", pairId: "Tranh" },
 ];
 
 // Xáo trộn hình ảnh
@@ -449,16 +452,13 @@ function showFinalScore() {
             else if (playerRank <= 10) playerScore = 6;
             else playerScore = 5;
 
-            // Hiển thị kết quả cuối cùng cho người chơi
             document.getElementById('result-player-name').textContent = `Tên người chơi: ${playerName}`;
             document.getElementById('result-time').textContent = `Thời gian: ${totalTime}`;
             document.getElementById('result-score').textContent = `Điểm: ${playerScore}`;
             document.getElementById('result-panel').style.display = 'block';
 
-            // Thêm thứ hạng của người chơi
             document.getElementById('result-rank').textContent = `Hạng: ${playerRank}`;
 
-            // Cập nhật điểm và thứ hạng của người chơi vào cơ sở dữ liệu
             updateLeaderboard(playerName, totalTime, playerScore);
         })
         .catch((error) => {
