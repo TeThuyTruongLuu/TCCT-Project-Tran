@@ -29,7 +29,7 @@ window.updateLeaderboard = function(playerName, finalScore, totalTime) {
     .catch((error) => {
         console.error("Error adding score: ", error);
     });
-}
+}}
 
 // Hàm hiển thị bảng xếp hạng từ Firestore
 function displayLeaderboard() {
@@ -51,6 +51,6 @@ function displayLeaderboard() {
           console.log("Error getting leaderboard data: ", error);
       });
 }
-}
+
 // Xuất các hàm ra ngoài để sử dụng ở file khác
 //export { updateLeaderboard, displayLeaderboard };
