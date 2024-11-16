@@ -67,11 +67,19 @@ window.updateLeaderboard = async function(playerName, newTotalTime) {
             existingRecord = { id: doc.id, ...doc.data() };
         });
 
-        // 2. Kiểm tra quyết định cập nhật hoặc thêm dữ liệu mới
-        if (existingRecord && existingRecord.totalTime <= newTotalTime) {
+        // 2. Kiểm tra thời gian kỷ lục cũ của người chơi
+        if (existingRecord && compareTimeStrings(existingRecord.totalTime, newTotalTime) <= 0) {
             console.log("Thời gian hoàn thành mới dài hơn hoặc bằng, không cập nhật.");
             await displayLeaderboard(); // Hiển thị lại bảng xếp hạng để đảm bảo cập nhật
-            return; // Dừng lại nếu thời gian mới không nhanh hơn
+
+            // Trả về kết quả để thông báo cho người chơi rằng kỷ lục không được cập nhật
+            return {
+                success: false,
+                playerName,
+                newTotalTime,
+                oldRecordTime: existingRecord.totalTime,
+                message: "Rất tiếc cơ mà bồ chưa vượt qua kỷ lục, kết quả này sẽ không được ghi nhận nha."
+            };
         }
 
         // 3. Xác định hạng cho người chơi mới

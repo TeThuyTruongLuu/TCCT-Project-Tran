@@ -98,6 +98,9 @@
 	.styled-table th, .styled-table td {
 		padding: 12px 15px;
 		border: 1px solid #ddd;
+		word-wrap: break-word; /* Ngắt dòng khi từ quá dài */
+		word-break: break-word; /* Hỗ trợ ngắt từ khi từ quá dài */
+		white-space: normal; /* Cho phép xuống dòng */
 	}
 
 	.styled-table tbody tr {
@@ -117,6 +120,7 @@
 	}
 	#cre, #memory-instructions {
 		display: none;
+		text-align: center;
 	}
     #start-button {
         background-color: #F6D0B1;
@@ -225,7 +229,7 @@
         <input type="text" id="nickname-input" placeholder="Tên của bồ">
         <button id="start-button">Bắt đầu</button>
     </div>
-	<div id="memory-instructions" style="text-align: center;">
+	<div id="memory-instructions">
 		<h2>Thời gian ghi nhớ</h2>
 		<p style="max-width: 60vw; word-wrap: break-word;">Dưới đây là các cặp bồ sẽ phải ghép và tên nhân vật, bồ có thể ghi nhớ bao lâu tùy thích.</p>
 		<p>Khi đã sẵn sàng, hãy nhấn "Vào game" ⸜(｡˃ ᵕ ˂ )⸝♡</p>
@@ -233,7 +237,7 @@
     <div class="game-board">
         <!-- Cards sẽ được tạo động bằng JavaScript -->
     </div>
-	<div id="cre" style="text-align: center;">
+	<div id="cre">
 		<p></p>
 		<p style="font-size: 12px; max-width: 60vw; word-wrap: break-word;">Cre: Commission của Phong, series lẩu vẽ bởi artist Ryuuo Jiro, series chibi động vật vẽ bởi Zevyd Lykier</p>
 		<p></p>
@@ -261,6 +265,7 @@
 		<h2 style="justify-content: center;">Chúc mừng bồ đã hoàn thành trò chơi!</h2>
 		<p id="result-player-name"></p>
 		<p id="result-time"></p>
+		<p id="result-old-record" style="color: red;"></p>
 		<p id="result-rank"></p>
 		<p id="result-score"></p>
 		<div style="display: flex; gap: 10px; justify-content: center;">
@@ -285,6 +290,11 @@ let matchedPairs = 0;
 const images = [
     { src: "images/Cá Dụ 1.png", pairId: "Dụ" }, { src: "images/Dụ 2.png", pairId: "Dụ" },
     { src: "images/Cáo Diệp 1.png", pairId: "Diệp" }, { src: "images/Diệp.png", pairId: "Diệp" },
+	{ src: "images/Cáo tuyết Lam 1.png", pairId: "Lam" }, { src: "images/Lam.png", pairId: "Lam" },
+    { src: "images/Chuột Duệ 1.png", pairId: "Duệ" }, { src: "images/Duệ.png", pairId: "Duệ" },
+    { src: "images/Corgi Lư 1.png", pairId: "Lư" }, { src: "images/Lư.png", pairId: "Lư" },
+    { src: "images/Cụt Chu 1.png", pairId: "Chu" }, { src: "images/Chu.png", pairId: "Chu" },
+    { src: "images/Hamster Tranh 1.png", pairId: "Tranh" }, { src: "images/Tranh.png", pairId: "Tranh" },
 ];
 
 // Xáo trộn hình ảnh
@@ -413,63 +423,38 @@ function resetCards(isMatch) {
 }
 
 // Hiển thị điểm cuối và cập nhật bảng xếp hạng
-function showFinalScore() {
+async function showFinalScore() {
     stopTimer();
 
-    const totalTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    const newTotalTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
     if (!db) {
         console.error("Database not initialized.");
         return;
     }
 
-    db.orderBy("totalTime", "asc")
-        .get()
-        .then((querySnapshot) => {
-            if (querySnapshot.empty) {
-                console.error("No scores found in leaderboard collection.");
-                return;
-            }
+    // Gọi updateLeaderboard để cập nhật hoặc kiểm tra kỷ lục
+    const result = await updateLeaderboard(playerName, newTotalTime);
 
-            const scores = [];
-            querySnapshot.forEach((doc) => {
-                scores.push({ ...doc.data(), id: doc.id });
-            });
-
-            // Loại bỏ trùng tên và giữ lại điểm tốt nhất cho mỗi người chơi
-            const uniqueScores = {};
-            scores.forEach(score => {
-                if (!uniqueScores[score.playerName] || compareTimeStrings(uniqueScores[score.playerName].totalTime, score.totalTime) > 0) {
-                    uniqueScores[score.playerName] = score;
-                }
-            });
-
-            // Đảm bảo người chơi hiện tại được thêm vào uniqueScores
-            uniqueScores[playerName] = { playerName, totalTime, finalScore: calculatePlayerScore(totalTime) };
-
-            // Chuyển object uniqueScores thành mảng và sắp xếp theo thời gian
-            const sortedScores = Object.values(uniqueScores).sort((a, b) => compareTimeStrings(a.totalTime, b.totalTime));
-
-            // Tìm thứ hạng của người chơi hiện tại
-            const playerRank = sortedScores.findIndex(score => score.playerName === playerName) + 1;
-
-            // Tính điểm dựa trên thứ hạng
-            const playerScore = calculateScoreBasedOnRank(playerRank);
-
-            // Cập nhật giao diện kết quả
-            document.getElementById('result-player-name').textContent = `Tên người chơi: ${playerName}`;
-            document.getElementById('result-time').textContent = `Thời gian: ${totalTime}`;
-            document.getElementById('result-score').textContent = `Điểm: ${playerScore}`;
-            document.getElementById('result-panel').style.display = 'block';
-
-            document.getElementById('result-rank').textContent = `Hạng: ${playerRank}`;
-
-            updateLeaderboard(playerName, totalTime, playerScore);
-        })
-        .catch((error) => {
-            console.error("Error calculating leaderboard: ", error);
-        });
+    if (!result.success && result.message) {
+        // Trường hợp không vượt qua kỷ lục cũ
+        document.getElementById('result-player-name').textContent = `Tên người chơi: ${result.playerName}`;
+        document.getElementById('result-time').textContent = `Thời gian hoàn thành mới: ${result.newTotalTime}`;
+        document.getElementById('result-rank').textContent = "";
+        document.getElementById('result-score').textContent = result.message;
+        document.getElementById('result-old-record').textContent = `Thời gian kỷ lục cũ: ${result.oldRecordTime}`;
+        document.getElementById('result-panel').style.display = 'block';
+    } else {
+        // Trường hợp có kỷ lục mới
+        document.getElementById('result-player-name').textContent = `Tên người chơi: ${result.playerName}`;
+        document.getElementById('result-time').textContent = `Thời gian: ${result.newTotalTime}`;
+        document.getElementById('result-rank').textContent = `Hạng: ${result.rank}`;
+        document.getElementById('result-score').textContent = `Điểm: ${result.points}`;
+        document.getElementById('result-panel').style.display = 'block';
+    }
 }
+
+
 
 // Hàm so sánh chuỗi thời gian "mm:ss"
 function compareTimeStrings(timeA, timeB) {
@@ -544,13 +529,32 @@ document.getElementById('ready-button').addEventListener('click', () => {
     document.querySelectorAll('.card-overlay').forEach(overlay => {
         overlay.style.display = 'none';
     });
-	document.getElementById('memory-instructions').style.display = 'none';
+    document.getElementById('memory-instructions').style.display = 'none';
+
+    // Xáo trộn lại vị trí các thẻ
+    shuffleCards();
 
     // Bắt đầu nhạc nền và đếm giờ
     backgroundMusic.play();
     startTimer();
     document.getElementById('ready-button').style.display = 'none';
 });
+
+// Hàm xáo trộn thẻ
+function shuffleCards() {
+    const gameBoard = document.querySelector('.game-board');
+    const cards = Array.from(gameBoard.children); // Lấy tất cả thẻ hiện tại thành mảng
+
+    // Xóa tất cả thẻ khỏi giao diện
+    cards.forEach(card => gameBoard.removeChild(card));
+
+    // Xáo trộn mảng thẻ
+    const shuffledCards = cards.sort(() => 0.5 - Math.random());
+
+    // Thêm các thẻ đã xáo trộn lại vào gameBoard
+    shuffledCards.forEach(card => gameBoard.appendChild(card));
+}
+
 
 </script>
 </body>
