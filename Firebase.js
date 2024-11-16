@@ -20,100 +20,114 @@ function initializeApp() {
     db = firestore.collection("leaderboard"); // Gán db trực tiếp là collection "leaderboard"
 }
 
-// Hàm lưu điểm vào Firestore và chỉ giữ lại 3 kết quả cao nhất của mỗi người chơi
-window.updateLeaderboard = async function(playerName, totalTime, playerScore) {
-    // Không cần gọi lại `db.collection('leaderboard')`
+// Hàm xác định hạng cho người chơi mới dựa trên thời gian hoàn thành của họ
+async function determineRank(playerName, newTotalTime) {
+    const allScoresSnapshot = await db.orderBy('totalTime', 'asc').get(); // Sắp xếp từ nhanh nhất đến chậm nhất
+    const uniqueTimes = new Set(); // Tập hợp lưu trữ các thời gian hoàn thành duy nhất
+
+    // Lấy các giá trị `totalTime` duy nhất
+    allScoresSnapshot.forEach((doc) => {
+        const data = doc.data();
+        uniqueTimes.add(data.totalTime); // Thêm thời gian hoàn thành vào tập hợp
+    });
+
+    // Chuyển `uniqueTimes` thành một mảng và sắp xếp
+    const sortedUniqueTimes = Array.from(uniqueTimes).sort((a, b) => a - b);
+
+    let rank = 1; // Bắt đầu từ hạng cao nhất
+    for (let time of sortedUniqueTimes) {
+        if (newTotalTime < time) {
+            // Nếu thời gian hoàn thành của người chơi mới nhanh hơn, giữ nguyên `rank`
+            break;
+        } else if (newTotalTime === time) {
+            // Nếu thời gian hoàn thành bằng nhau, giữ nguyên `rank` và ngừng tìm kiếm
+            break;
+        } else {
+            // Nếu thời gian hoàn thành chậm hơn, tăng `rank`
+            rank++;
+        }
+    }
+
+    return rank;
+}
+
+
+
+
+// Hàm lưu điểm vào Firestore nếu người chơi đạt kỷ lục mới và hiển thị lại bảng xếp hạng ngay sau đó
+window.updateLeaderboard = async function(playerName, newTotalTime) {
     const leaderboardRef = db;
 
     try {
-        // 1. Tìm tất cả các kết quả của người chơi hiện tại
-        const snapshot = await leaderboardRef.where('playerName', '==', playerName).get();
-        const playerScores = [];
+        // 1. Lấy kết quả trước của người chơi hiện tại
+        const playerSnapshot = await leaderboardRef.where('playerName', '==', playerName).get();
+        let existingRecord = null;
 
-        snapshot.forEach(doc => {
-            playerScores.push({ id: doc.id, ...doc.data() });
+        playerSnapshot.forEach(doc => {
+            existingRecord = { id: doc.id, ...doc.data() };
         });
 
-        // 2. Thêm kết quả mới vào danh sách kết quả của người chơi
-        playerScores.push({
-            playerName: playerName,
-            totalTime: totalTime,
-            finalScore: playerScore
-        });
-
-        // 3. Sắp xếp các kết quả theo điểm từ cao đến thấp
-        playerScores.sort((a, b) => b.finalScore - a.finalScore || a.totalTime - b.totalTime);
-
-        // 4. Giữ lại 3 kết quả cao nhất và xác định các kết quả cần xóa
-        const topScores = playerScores.slice(0, 3); // 3 kết quả cao nhất
-        const scoresToDelete = playerScores.slice(3); // Các kết quả còn lại để xóa
-
-        // 5. Lưu các kết quả mới vào Firestore (nếu chưa có trong cơ sở dữ liệu)
-        for (const score of topScores) {
-            if (!score.id) {
-                // Nếu kết quả này chưa tồn tại (không có `id`), thêm mới vào Firestore
-                await leaderboardRef.add({
-                    playerName: score.playerName,
-                    totalTime: score.totalTime,
-                    finalScore: score.finalScore
-                });
-            }
+        // 2. Kiểm tra quyết định cập nhật hoặc thêm dữ liệu mới
+        if (existingRecord && existingRecord.totalTime <= newTotalTime) {
+            console.log("Thời gian hoàn thành mới dài hơn hoặc bằng, không cập nhật.");
+            await displayLeaderboard(); // Hiển thị lại bảng xếp hạng để đảm bảo cập nhật
+            return; // Dừng lại nếu thời gian mới không nhanh hơn
         }
 
-        // 6. Xóa các kết quả thấp hơn (trong scoresToDelete)
-        for (const score of scoresToDelete) {
-            if (score.id) {
-                // Xóa nếu có `id` (tức là đã tồn tại trong Firestore)
-                await leaderboardRef.doc(score.id).delete();
-            }
+        // 3. Xác định hạng cho người chơi mới
+        const rank = await determineRank(playerName, newTotalTime);
+
+        // 4. Tính điểm dựa trên thứ hạng
+        const points = getPointsForRank(rank);
+
+        // 5. Thêm hoặc cập nhật dữ liệu mới vào Firestore
+        if (existingRecord) {
+            await leaderboardRef.doc(existingRecord.id).update({
+                totalTime: newTotalTime,
+                points,
+                rank
+            });
+        } else {
+            await leaderboardRef.add({
+                playerName,
+                totalTime: newTotalTime,
+                points,
+                rank
+            });
         }
 
-        console.log("Đã cập nhật leaderboard và chỉ giữ lại 3 kết quả cao nhất của người chơi.");
+        console.log("Đã cập nhật leaderboard với kỷ lục mới.");
+        await displayLeaderboard(); // Hiển thị lại bảng xếp hạng sau khi cập nhật
     } catch (error) {
         console.error("Error updating leaderboard: ", error);
     }
 }
 
+// Hàm tính điểm dựa trên thứ hạng
+function getPointsForRank(rank) {
+    if (rank === 1) return 10;
+    else if (rank === 2) return 9;
+    else if (rank === 3) return 8;
+    else if (rank <= 5) return 7;
+    else if (rank <= 10) return 6;
+    return 5;
+}
+
 // Hàm hiển thị bảng xếp hạng từ Firestore
-window.displayLeaderboard = function() {
-    return db.orderBy("finalScore", "desc")
+window.displayLeaderboard = async function() {
+    return db.orderBy("rank", "asc") // Sử dụng thứ hạng đã tính sẵn
         .get()
         .then((querySnapshot) => {
             const leaderboardElement = document.getElementById("leaderboard");
             leaderboardElement.innerHTML = "<tr><th>Tên</th><th>Thời gian hoàn thành</th><th>Điểm</th></tr>";
 
-            // Tạo object để lưu điểm cao nhất của mỗi người
-            const uniquePlayers = {};
-
-            // Loại bỏ các tên trùng lặp và chỉ giữ điểm cao nhất
             querySnapshot.forEach((doc) => {
                 const entry = doc.data();
-                if (!uniquePlayers[entry.playerName] || uniquePlayers[entry.playerName].finalScore < entry.finalScore) {
-                    uniquePlayers[entry.playerName] = entry;
-                }
-            });
-
-            // Chuyển object uniquePlayers thành mảng và sắp xếp theo điểm
-            const leaderboardData = Object.values(uniquePlayers)
-                .sort((a, b) => b.finalScore - a.finalScore)
-                .slice(0, 10); // Chỉ lấy top 10
-
-            // Tính điểm cho từng vị trí
-            leaderboardData.forEach((entry, index) => {
-                let points;
-                if (index === 0) points = 10;
-                else if (index === 1) points = 9;
-                else if (index === 2) points = 8;
-                else if (index < 5) points = 7;
-                else if (index < 10) points = 6;
-                else points = 5;
-
-                // Tạo dòng mới cho từng mục trong bảng xếp hạng
                 const row = document.createElement("tr");
                 row.innerHTML = `
                     <td>${entry.playerName}</td>
                     <td>${entry.totalTime}</td>
-                    <td>${points}</td>
+                    <td>${entry.points}</td>
                 `;
                 leaderboardElement.appendChild(row);
             });
