@@ -416,20 +416,16 @@ function resetCards(isMatch) {
 function showFinalScore() {
     stopTimer();
 
-    // Định dạng thời gian dưới dạng "mm:ss"
     const totalTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
-    // Kiểm tra nếu `db` không tồn tại để ngăn lỗi truy cập cơ sở dữ liệu
     if (!db) {
         console.error("Database not initialized.");
         return;
     }
 
-    // Lấy dữ liệu từ cơ sở dữ liệu để xác định thứ hạng
     db.orderBy("totalTime", "asc")
         .get()
         .then((querySnapshot) => {
-            // Kiểm tra nếu `querySnapshot` rỗng để ngăn lỗi không có dữ liệu
             if (querySnapshot.empty) {
                 console.error("No scores found in leaderboard collection.");
                 return;
@@ -448,35 +444,61 @@ function showFinalScore() {
                 }
             });
 
-            // Chuyển object uniqueScores thành mảng và sắp xếp theo `totalTime`
+            // Đảm bảo người chơi hiện tại được thêm vào uniqueScores
+            uniqueScores[playerName] = { playerName, totalTime, finalScore: calculatePlayerScore(totalTime) };
+
+            // Chuyển object uniqueScores thành mảng và sắp xếp theo thời gian
             const sortedScores = Object.values(uniqueScores).sort((a, b) => compareTimeStrings(a.totalTime, b.totalTime));
 
             // Tìm thứ hạng của người chơi hiện tại
             const playerRank = sortedScores.findIndex(score => score.playerName === playerName) + 1;
 
             // Tính điểm dựa trên thứ hạng
-            let playerScore;
-            if (playerRank === 1) playerScore = 10;
-            else if (playerRank === 2) playerScore = 9;
-            else if (playerRank === 3) playerScore = 8;
-            else if (playerRank <= 5) playerScore = 7;
-            else if (playerRank <= 10) playerScore = 6;
-            else playerScore = 5;
+            const playerScore = calculateScoreBasedOnRank(playerRank);
 
             // Cập nhật giao diện kết quả
             document.getElementById('result-player-name').textContent = `Tên người chơi: ${playerName}`;
             document.getElementById('result-time').textContent = `Thời gian: ${totalTime}`;
             document.getElementById('result-score').textContent = `Điểm: ${playerScore}`;
             document.getElementById('result-panel').style.display = 'block';
+
             document.getElementById('result-rank').textContent = `Hạng: ${playerRank}`;
 
-            // Cập nhật bảng xếp hạng
             updateLeaderboard(playerName, totalTime, playerScore);
         })
         .catch((error) => {
             console.error("Error calculating leaderboard: ", error);
         });
 }
+
+// Hàm so sánh chuỗi thời gian "mm:ss"
+function compareTimeStrings(timeA, timeB) {
+    const [minutesA, secondsA] = timeA.split(':').map(Number);
+    const [minutesB, secondsB] = timeB.split(':').map(Number);
+
+    if (minutesA !== minutesB) {
+        return minutesA - minutesB;
+    } else {
+        return secondsA - secondsB;
+    }
+}
+
+// Hàm tính điểm dựa trên thứ hạng
+function calculateScoreBasedOnRank(rank) {
+    if (rank === 1) return 10;
+    else if (rank === 2) return 9;
+    else if (rank === 3) return 8;
+    else if (rank <= 5) return 7;
+    else if (rank <= 10) return 6;
+    return 5;
+}
+
+// Hàm giả lập tính điểm cho người chơi hiện tại (dựa trên định nghĩa)
+function calculatePlayerScore(totalTime) {
+    // Bạn có thể tùy chỉnh tính toán điểm ở đây nếu cần thiết
+    return 7; // Ví dụ, mặc định cho người chơi mới
+}
+
 
 // Hàm so sánh chuỗi thời gian "mm:ss"
 function compareTimeStrings(timeA, timeB) {
