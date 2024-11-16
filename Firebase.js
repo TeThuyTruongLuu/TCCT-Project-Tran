@@ -36,25 +36,24 @@ function initializeApp() {
 }
 
 // Hàm hiển thị bảng xếp hạng từ Firestore
-window.displayLeaderboard = async function() {
-    try {
-        const q = query(leaderboardRef, orderBy("finalScore", "desc"), limit(200));
-        const querySnapshot = await getDocs(q);
-        const leaderboardElement = document.getElementById("leaderboard");
-        leaderboardElement.innerHTML = "";
+window.displayLeaderboard = function() {
+    return db.orderBy("finalScore", "desc")
+        .limit(10)
+        .get()
+        .then((querySnapshot) => {
+            const leaderboardElement = document.getElementById("leaderboard");
+            leaderboardElement.innerHTML = "";
 
-        // Thêm let i = 0 để đếm thứ tự
-        let i = 0;
-        querySnapshot.forEach((doc) => {
-            const entry = doc.data();
-            const li = document.createElement("li");
-            i++; // Tăng số thứ tự
-            li.textContent = `#${i}: ${entry.playerName} - ${entry.finalScore} điểm - ${entry.totalTime} phút`;
-            leaderboardElement.appendChild(li);
+            querySnapshot.forEach((doc, index) => {
+                const entry = doc.data();
+                const li = document.createElement("li");
+                li.textContent = `#${index + 1}: ${entry.playerName} - ${entry.finalScore} điểm - ${entry.totalTime} phút`;
+                leaderboardElement.appendChild(li);
+            });
+        })
+        .catch((error) => {
+            console.log("Error getting leaderboard data: ", error);
         });
-    } catch (error) {
-        console.log("Error getting leaderboard data: ", error);
-    }
 }
 
 // Đảm bảo initializeApp được gọi khi trang web load
