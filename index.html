@@ -101,15 +101,11 @@
 	}
 
 	.styled-table tbody tr {
-		background-color: #f3f3f3;
+		background-color: #FFBAB9;
 	}
 
 	.styled-table tbody tr:nth-child(even) {
 		background-color: #e9e9e9;
-	}
-
-	.styled-table tbody tr:hover {
-		background-color: #FFBAB9;
 	}
 
 	.leaderboard-container h3 {
@@ -418,13 +414,12 @@ function resetCards(isMatch) {
 }
 
 // Hiển thị điểm cuối và cập nhật bảng xếp hạng
-// Hiển thị điểm cuối và cập nhật bảng xếp hạng
 function showFinalScore() {
     stopTimer();
-    const totalTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    const totalTime = `${minutes}:${seconds.toString().padStart(2, '0')}`; // Chuyển đổi thời gian thành chuỗi, ví dụ "0:06"
 
     // Lấy toàn bộ dữ liệu từ cơ sở dữ liệu để xác định thứ hạng
-    db.orderBy("finalScore", "desc").orderBy("totalTime", "asc")
+    db.orderBy("totalTime", "asc")
         .get()
         .then((querySnapshot) => {
             const scores = [];
@@ -432,17 +427,16 @@ function showFinalScore() {
                 scores.push({ ...doc.data(), id: doc.id });
             });
 
-            // Loại bỏ tên trùng lặp và giữ lại điểm cao nhất cho mỗi người chơi
+            // Loại bỏ tên trùng lặp và giữ lại điểm tốt nhất cho mỗi người chơi
             const uniqueScores = {};
             scores.forEach(score => {
-                if (!uniqueScores[score.playerName] || uniqueScores[score.playerName].finalScore < score.finalScore) {
+                if (!uniqueScores[score.playerName] || uniqueScores[score.playerName].totalTime > score.totalTime) {
                     uniqueScores[score.playerName] = score;
                 }
             });
 
-            // Chuyển `uniqueScores` thành mảng và sắp xếp theo điểm và thời gian
-            const sortedScores = Object.values(uniqueScores)
-                .sort((a, b) => b.finalScore - a.finalScore || a.totalTime.localeCompare(b.totalTime));
+            // Chuyển object thành mảng và sắp xếp theo thời gian
+            const sortedScores = Object.values(uniqueScores).sort((a, b) => a.totalTime.localeCompare(b.totalTime));
 
             // Tìm thứ hạng của người chơi hiện tại
             const playerRank = sortedScores.findIndex(score => score.playerName === playerName) + 1;
@@ -456,22 +450,19 @@ function showFinalScore() {
             else if (playerRank <= 10) playerScore = 6;
             else playerScore = 5;
 
-            // Hiển thị kết quả cho người chơi
             document.getElementById('result-player-name').textContent = `Tên người chơi: ${playerName}`;
             document.getElementById('result-time').textContent = `Thời gian: ${totalTime}`;
             document.getElementById('result-score').textContent = `Điểm: ${playerScore}`;
-            document.getElementById('result-rank').textContent = `Hạng: ${playerRank}`;
             document.getElementById('result-panel').style.display = 'block';
 
-            // Cập nhật bảng xếp hạng
+            document.getElementById('result-rank').textContent = `Hạng: ${playerRank}`;
+
             updateLeaderboard(playerName, totalTime, playerScore);
         })
         .catch((error) => {
             console.error("Error calculating leaderboard: ", error);
         });
 }
-
-
 
 
 // Khởi động lại trò chơi
