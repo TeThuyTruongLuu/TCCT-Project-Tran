@@ -19,21 +19,59 @@ function initializeApp() {
     const firestore = firebase.firestore();
     db = firestore.collection("leaderboard");  // Gán giá trị cho biến toàn cục
 
-    // Hàm lưu điểm vào Firestore
-    // Hàm lưu điểm vào Firestore
-	window.updateLeaderboard = function(playerName, totalTime, playerScore) {
-		return db.add({
-			playerName: playerName,
-			totalTime: totalTime,
-			finalScore: playerScore
-		})
-		.then((docRef) => {
-			console.log("Score added with ID: ", docRef.id);
-		})
-		.catch((error) => {
-			console.error("Error adding score: ", error);
-		});
+	// Hàm lưu điểm vào Firestore và chỉ giữ lại 3 kết quả cao nhất của mỗi người chơi
+	window.updateLeaderboard = async function(playerName, totalTime, playerScore) {
+		const leaderboardRef = db.collection('leaderboard');
+		
+		try {
+			// 1. Tìm tất cả các kết quả của người chơi hiện tại
+			const snapshot = await leaderboardRef.where('playerName', '==', playerName).get();
+			const playerScores = [];
+
+			snapshot.forEach(doc => {
+				playerScores.push({ id: doc.id, ...doc.data() });
+			});
+
+			// 2. Thêm kết quả mới vào danh sách kết quả của người chơi
+			playerScores.push({
+				playerName: playerName,
+				totalTime: totalTime,
+				finalScore: playerScore
+			});
+
+			// 3. Sắp xếp các kết quả theo điểm từ cao đến thấp
+			playerScores.sort((a, b) => b.finalScore - a.finalScore || a.totalTime - b.totalTime);
+
+			// 4. Giữ lại 3 kết quả cao nhất và xác định các kết quả cần xóa
+			const topScores = playerScores.slice(0, 3); // 3 kết quả cao nhất
+			const scoresToDelete = playerScores.slice(3); // Các kết quả còn lại để xóa
+
+			// 5. Lưu các kết quả mới vào Firestore (nếu chưa có trong cơ sở dữ liệu)
+			for (const score of topScores) {
+				if (!score.id) {
+					// Nếu kết quả này chưa tồn tại (không có `id`), thêm mới vào Firestore
+					await leaderboardRef.add({
+						playerName: score.playerName,
+						totalTime: score.totalTime,
+						finalScore: score.finalScore
+					});
+				}
+			}
+
+			// 6. Xóa các kết quả thấp hơn (trong scoresToDelete)
+			for (const score of scoresToDelete) {
+				if (score.id) {
+					// Xóa nếu có `id` (tức là đã tồn tại trong Firestore)
+					await leaderboardRef.doc(score.id).delete();
+				}
+			}
+
+			console.log("Đã cập nhật leaderboard và chỉ giữ lại 3 kết quả cao nhất của người chơi.");
+		} catch (error) {
+			console.error("Error updating leaderboard: ", error);
+		}
 	}
+
 }
 
 // Hàm hiển thị bảng xếp hạng từ Firestore
