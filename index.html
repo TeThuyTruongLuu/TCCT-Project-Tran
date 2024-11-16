@@ -120,7 +120,12 @@
 	}
 	#cre, #memory-instructions {
 		display: none;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
 		text-align: center;
+		max-width: 70vw;
+		word-wrap: break-word;
 	}
     #start-button {
         background-color: #F6D0B1;
@@ -204,7 +209,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        font-size: 40px;
+        font-size: 5vw;
         font-weight: bold;
 		font-family: Roboto;
     }
@@ -231,7 +236,7 @@
     </div>
 	<div id="memory-instructions">
 		<h2>Thời gian ghi nhớ</h2>
-		<p style="max-width: 60vw; word-wrap: break-word;">Dưới đây là các cặp bồ sẽ phải ghép và tên nhân vật, bồ có thể ghi nhớ bao lâu tùy thích.</p>
+		<p>Dưới đây là các cặp bồ sẽ phải ghép và tên nhân vật, bồ có thể ghi nhớ bao lâu tùy thích.</p>
 		<p>Khi đã sẵn sàng, hãy nhấn "Vào game" ⸜(｡˃ ᵕ ˂ )⸝♡</p>
 	</div>
     <div class="game-board">
@@ -239,7 +244,7 @@
     </div>
 	<div id="cre">
 		<p></p>
-		<p style="font-size: 12px; max-width: 60vw; word-wrap: break-word;">Cre: Commission của Phong, series lẩu vẽ bởi artist Ryuuo Jiro, series chibi động vật vẽ bởi Zevyd Lykier</p>
+		<p style="font-size: 12px;">Cre: Commission của Phong, series lẩu vẽ bởi artist Ryuuo Jiro, series chibi động vật vẽ bởi Zevyd Lykier</p>
 		<p></p>
 		<button id="ready-button">Vào game</button>
 		<p></p>
