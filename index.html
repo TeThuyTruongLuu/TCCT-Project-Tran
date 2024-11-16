@@ -133,7 +133,20 @@
         .card-front {
             transform: rotateY(180deg);
         }
-
+		.card-overlay {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0, 0, 0, 0.3);
+			color: white;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			font-size: 20px;
+			font-weight: bold;
+		}
         /* Responsive adjustments */
         @media (max-width: 600px) {
             .game-board {
@@ -154,7 +167,7 @@
         <input type="text" id="nickname-input" placeholder="Tên của bồ">
         <button id="start-button">Bắt đầu</button>
     </div>
-
+	<button id="ready-button" style="display: none; position: absolute; top: 60px;">Sẵn sàng</button>
     <div class="game-board">
         <!-- Cards sẽ được tạo động bằng JavaScript -->
     </div>
@@ -231,15 +244,44 @@ document.getElementById('start-button').addEventListener('click', () => {
         playerName = nicknameInput;
         document.getElementById('login-modal').style.display = 'none';
         document.querySelector('.game-board').style.display = 'grid';
-        backgroundMusic.play();
-        startTimer();
+
+        // Hiển thị mặt trước của tất cả thẻ để ghi nhớ
+        document.querySelectorAll('.card').forEach(card => {
+            card.classList.add('flip');
+        });
+
+        // Hiển thị nút "Sẵn sàng" sau khi các thẻ đã mở
+        document.getElementById('ready-button').style.display = 'block';
     } else {
         alert("Nhập đúng mã 'Tran' và tên hợp lệ nha bồ ơi.");
     }
 });
 
+
+// Thời gian cho ghi nhớ
+document.getElementById('ready-button').addEventListener('click', () => {
+    document.querySelectorAll('.card').forEach(card => {
+        card.classList.remove('flip');
+    });
+
+    // Bắt đầu nhạc nền và đếm giờ
+    backgroundMusic.play();
+    startTimer();
+    document.getElementById('ready-button').style.display = 'none';
+});
+
+
+
+
 // Tạo các thẻ
 gameGrid.forEach(item => {
+	const cardOverlay = document.createElement('div');
+    cardOverlay.classList.add('card-overlay');
+    cardOverlay.textContent = item.pairId;
+
+    // Thêm lớp overlay vào thẻ
+    cardFront.appendChild(cardOverlay);
+
     const card = document.createElement('div');
     card.classList.add('card');
     card.dataset.pairId = item.pairId;
@@ -261,6 +303,9 @@ gameGrid.forEach(item => {
     cardInner.appendChild(cardBack);
     card.appendChild(cardInner);
     document.querySelector('.game-board').appendChild(card);
+
+
+
 
     // Sự kiện lật thẻ
     card.addEventListener('click', () => {
