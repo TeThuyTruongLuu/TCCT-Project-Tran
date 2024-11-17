@@ -60,14 +60,19 @@ function getPointsForRank(rank) {
     return 5;
 }
 
-// Hàm so sánh chuỗi thời gian để xác định thời gian nào nhanh hơn
-function compareTimeStrings(time1, time2) {
-    const [min1, sec1] = time1.split(":").map(Number);
-    const [min2, sec2] = time2.split(":").map(Number);
-    const totalSec1 = min1 * 60 + sec1;
-    const totalSec2 = min2 * 60 + sec2;
-    return totalSec1 - totalSec2;
+
+// Hàm so sánh chuỗi thời gian "mm:ss"
+function compareTimeStrings(timeA, timeB) {
+    const [minutesA, secondsA] = timeA.split(':').map(Number);
+    const [minutesB, secondsB] = timeB.split(':').map(Number);
+
+    if (minutesA !== minutesB) {
+        return minutesA - minutesB;
+    } else {
+        return secondsA - secondsB;
+    }
 }
+
 
 // Hàm cập nhật kết quả cho người chơi mới hoặc cập nhật thời gian mới cho người chơi hiện tại
 async function updatePlayerResult(playerName, newTotalTime) {
