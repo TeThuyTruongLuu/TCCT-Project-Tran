@@ -582,24 +582,6 @@ async function showFinalScore() {
 
 
 
-
-
-
-
-
-// Hàm so sánh chuỗi thời gian "mm:ss"
-function compareTimeStrings(timeA, timeB) {
-    const [minutesA, secondsA] = timeA.split(':').map(Number);
-    const [minutesB, secondsB] = timeB.split(':').map(Number);
-
-    if (minutesA !== minutesB) {
-        return minutesA - minutesB;
-    } else {
-        return secondsA - secondsB;
-    }
-}
-
-
 // Khởi động lại trò chơi
 window.restartGame = function restartGame() {
     location.reload();
