@@ -38,13 +38,13 @@
     }
     .game-board {
         display: grid;
-        grid-template-columns: repeat(8, 1fr);
+        grid-template-columns: repeat(9, 1fr);
         grid-gap: 10px;
-        width: 70vw;
-        max-width: 85vw;
+        width: 85vw;
+        max-width: 95vw;
         display: none;
 		justify-content: center;
-		padding-top: 30px;
+		padding-top: 50vw;
     }
 
     /* Thiết kế bảng nhập mã */
@@ -127,6 +127,12 @@
 		max-width: 70vw;
 		word-wrap: break-word;
 	}
+	#memory-instructions {
+		padding-top: 38vw;
+		position: absolute;
+		padding-left: 20vw;
+	}
+
     #start-button {
         background-color: #F6D0B1;
         border: none;
@@ -228,14 +234,20 @@
     /* Responsive adjustments */
     @media (max-width: 600px) {
         .game-board {
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             grid-gap: 8px;
+			padding-top: 160vw;
         }
         .card {
             padding-top: 80%;
         }
 		.card-overlay {
-			font-size: 4vw;
+			font-size: 3vw;
+		}
+		#memory-instructions {
+			padding-top: 105vw;
+			position: absolute;
+			padding-left: 9vw;
 		}
     }
 </style>
@@ -248,14 +260,16 @@
         <input type="text" id="nickname-input" placeholder="Tên của bồ">
         <button id="start-button">Bắt đầu</button>
     </div>
-	<div id="memory-instructions">
-		<h2>Thời gian ghi nhớ</h2>
-		<p>Dưới đây là các cặp bồ sẽ phải ghép và tên nhân vật, bồ có thể ghi nhớ bao lâu tùy thích.</p>
-		<p>Khi đã sẵn sàng, hãy nhấn "Vào game" ⸜(｡˃ ᵕ ˂ )⸝♡</p>
+	<div>
+		<div id="memory-instructions">
+			<h2>Thời gian ghi nhớ</h2>
+			<p>Dưới đây là các cặp bồ sẽ phải ghép và tên nhân vật, bồ có thể ghi nhớ bao lâu tùy thích.</p>
+			<p>Khi đã sẵn sàng, hãy nhấn "Vào game" ⸜(｡˃ ᵕ ˂ )⸝♡</p>
+		</div>
+		<div class="game-board">
+			<!-- Cards sẽ được tạo động bằng JavaScript -->
+		</div>
 	</div>
-    <div class="game-board">
-        <!-- Cards sẽ được tạo động bằng JavaScript -->
-    </div>
 	<div id="cre">
 		<p></p>
 		<p style="font-size: 12px;">Cre: Commission của Phong, series lẩu vẽ bởi artist Ryuuo Jiro, series chibi động vật vẽ bởi Zevyd Lykier</p>
@@ -321,8 +335,25 @@ const images = [
 	{ src: "images/Vịt vô tri Kiều 1.png", pairId: "Kiều" }, { src: "images/Kiều.png", pairId: "Kiều" },
 	{ src: "images/Mèo Vương 1.png", pairId: "Vương" }, { src: "images/Vương 2.png", pairId: "Vương" },
 	{ src: "images/Hổ con Tống 1.png", pairId: "Tống" }, { src: "images/Tống.png", pairId: "Tống" },
-	{ src: "images/Hamster Tranh 1.png", pairId: "Tranh" }, { src: "images/Tranh.png", pairId: "Tranh" },
+	{ src: "images/Đới.png", pairId: "Đới" }, { text: "Đới", pairId: "Đới" },
 	{ src: "images/Chung.png", pairId: "Chung" }, { text: "Chung", pairId: "Chung" },
+	{ src: "images/Giang.png", pairId: "Giang" }, { text: "Giang", pairId: "Giang" },
+	{ src: "images/Hạ.png", pairId: "Hạ" }, { text: "Hạ", pairId: "Hạ" },
+	{ src: "images/Khưu.png", pairId: "Khưu" }, { text: "Khưu", pairId: "Khưu" },
+	{ src: "images/Lạc.png", pairId: "Lạc" }, { text: "Lạc", pairId: "Lạc" },
+	{ src: "images/Lâm.png", pairId: "Lâm" }, { text: "Lâm", pairId: "Lâm" },
+	{ src: "images/Lý.png", pairId: "Lý" }, { text: "Lý", pairId: "Lý" },
+	{ src: "images/Ngô.png", pairId: "Ngô" }, { text: "Ngô", pairId: "Ngô" },
+	{ src: "images/Sở.png", pairId: "Sở" }, { text: "Sở", pairId: "Sở" },
+	{ src: "images/Tài.png", pairId: "Tài" }, { text: "Tài", pairId: "Tài" },
+	{ src: "images/Tán.png", pairId: "Tán" }, { text: "Tán", pairId: "Tán" },
+	{ src: "images/Tiêu.png", pairId: "Tiêu" }, { text: "Tiêu", pairId: "Tiêu" },
+	{ src: "images/Tôn.png", pairId: "Tôn" }, { text: "Tôn", pairId: "Tôn" },
+	{ src: "images/Trâu.png", pairId: "Trâu" }, { text: "Trâu", pairId: "Trâu" },
+	{ src: "images/Trương.png", pairId: "Trương" }, { text: "Trương", pairId: "Trương" },
+	{ src: "images/Tường.png", pairId: "Tường" }, { text: "Tường", pairId: "Tường" },
+
+	
 ];
 
 // Xáo trộn hình ảnh
