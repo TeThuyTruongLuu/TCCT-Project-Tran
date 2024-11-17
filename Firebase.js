@@ -20,7 +20,6 @@ function initializeApp() {
     db = firestore.collection("leaderboard"); // Gán db trực tiếp là collection "leaderboard"
 }
 
-// Hàm xác định hạng cho người chơi mới dựa trên thời gian hoàn thành của họ (dựa trên unique totalTime)
 async function determineRank(playerName, newTotalTime) {
     const allScoresSnapshot = await db.orderBy('totalTime', 'asc').get(); // Sắp xếp từ nhanh nhất đến chậm nhất
     const uniqueTimes = new Set(); // Tập hợp lưu trữ các thời gian hoàn thành duy nhất
@@ -51,99 +50,6 @@ async function determineRank(playerName, newTotalTime) {
     return rank;
 }
 
-
-
-// Hàm lưu điểm vào Firestore nếu người chơi đạt kỷ lục mới và hiển thị lại bảng xếp hạng ngay sau đó
-window.updateLeaderboard = async function(playerName, newTotalTime) {
-    const leaderboardRef = db;
-
-    try {
-        // 1. Lấy kết quả trước của người chơi hiện tại
-        const playerSnapshot = await leaderboardRef.where('playerName', '==', playerName).get();
-        let existingRecord = null;
-
-        playerSnapshot.forEach(doc => {
-            existingRecord = { id: doc.id, ...doc.data() };
-        });
-
-        // 2. Nếu người chơi là mới hoàn toàn (không có bản ghi trước đó)
-        if (!existingRecord) {
-            console.log("Người chơi mới, thêm kỷ lục đầu tiên.");
-
-            // 3. Xác định hạng cho người chơi mới
-            const rank = await determineRank(playerName, newTotalTime);
-
-            // 4. Tính điểm dựa trên thứ hạng
-            const points = getPointsForRank(rank);
-
-            // 5. Thêm bản ghi mới vào Firestore cho người chơi mới
-            await leaderboardRef.add({
-                playerName,
-                totalTime: newTotalTime,
-                points,
-                rank
-            });
-
-            // Trả về kết quả thành công cho người chơi mới
-            return {
-                success: true,
-                playerName,
-                newTotalTime,
-                points,
-                rank,
-                message: "Đã thêm kỷ lục đầu tiên cho người chơi mới."
-            };
-        }
-
-        // 3. Kiểm tra thời gian kỷ lục cũ của người chơi (nếu người chơi đã có kỷ lục)
-        if (compareTimeStrings(existingRecord.totalTime, newTotalTime) <= 0) {
-            console.log("Thời gian hoàn thành mới dài hơn hoặc bằng, không cập nhật.");
-            await displayLeaderboard(); // Hiển thị lại bảng xếp hạng để đảm bảo cập nhật
-
-            // Trả về kết quả để thông báo cho người chơi rằng kỷ lục không được cập nhật
-            return {
-                success: false,
-                playerName,
-                newTotalTime,
-                oldRecordTime: existingRecord.totalTime,
-                message: "Rất tiếc cơ mà bồ chưa vượt qua kỷ lục, kết quả này sẽ không được ghi nhận nha."
-            };
-        }
-
-        // 4. Xác định hạng cho người chơi nếu thời gian mới nhanh hơn
-        const rank = await determineRank(playerName, newTotalTime);
-
-        // 5. Tính điểm dựa trên thứ hạng
-        const points = getPointsForRank(rank);
-
-        // 6. Cập nhật bản ghi của người chơi trong Firestore
-        await leaderboardRef.doc(existingRecord.id).update({
-            totalTime: newTotalTime,
-            points,
-            rank
-        });
-
-        console.log("Đã cập nhật leaderboard với kỷ lục mới.");
-        await displayLeaderboard(); // Hiển thị lại bảng xếp hạng sau khi cập nhật
-
-        // Trả về kết quả thành công khi cập nhật kỷ lục mới
-        return {
-            success: true,
-            playerName,
-            newTotalTime,
-            points,
-            rank,
-            message: "Đã cập nhật kỷ lục mới thành công."
-        };
-    } catch (error) {
-        console.error("Error updating leaderboard: ", error);
-        return { success: false, error: error.message };
-    }
-};
-
-
-
-
 // Hàm tính điểm dựa trên thứ hạng
 function getPointsForRank(rank) {
     if (rank === 1) return 10;
@@ -154,29 +60,173 @@ function getPointsForRank(rank) {
     return 5;
 }
 
-// Hàm hiển thị bảng xếp hạng từ Firestore
-window.displayLeaderboard = async function() {
-    return db.orderBy("rank", "asc") // Sử dụng thứ hạng đã tính sẵn
-        .get()
-        .then((querySnapshot) => {
-            const leaderboardElement = document.getElementById("leaderboard");
-            leaderboardElement.innerHTML = "<tr><th>Tên</th><th>Thời gian hoàn thành</th><th>Điểm</th></tr>";
-
-            querySnapshot.forEach((doc) => {
-                const entry = doc.data();
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${entry.playerName}</td>
-                    <td>${entry.totalTime}</td>
-                    <td>${entry.points}</td>
-                `;
-                leaderboardElement.appendChild(row);
-            });
-        })
-        .catch((error) => {
-            console.log("Error getting leaderboard data: ", error);
-        });
+// Hàm so sánh chuỗi thời gian để xác định thời gian nào nhanh hơn
+function compareTimeStrings(time1, time2) {
+    const [min1, sec1] = time1.split(":").map(Number);
+    const [min2, sec2] = time2.split(":").map(Number);
+    const totalSec1 = min1 * 60 + sec1;
+    const totalSec2 = min2 * 60 + sec2;
+    return totalSec1 - totalSec2;
 }
+
+// Hàm cập nhật kết quả cho người chơi mới hoặc cập nhật thời gian mới cho người chơi hiện tại
+async function updatePlayerResult(playerName, newTotalTime) {
+    const leaderboardRef = db;
+
+    try {
+        // Tìm xem người chơi có bản ghi nào trong hệ thống chưa
+        const playerSnapshot = await leaderboardRef.where('playerName', '==', playerName).get();
+        let existingRecord = null;
+
+        playerSnapshot.forEach(doc => {
+            existingRecord = { id: doc.id, ...doc.data() };
+        });
+
+        if (!existingRecord) {
+            // Người chơi mới, thêm bản ghi đầu tiên và xác định hạng ngay lập tức
+            const rank = await determineRank(playerName, newTotalTime);
+            const points = getPointsForRank(rank);
+
+            await leaderboardRef.add({
+                playerName,
+                totalTime: newTotalTime,
+                points,
+                rank
+            });
+
+            return {
+                success: true,
+                playerName,
+                newTotalTime,
+                rank,
+                points,
+                message: "Người chơi mới đã được thêm vào hệ thống."
+            };
+        }
+
+        // Nếu người chơi cũ có kỷ lục, chỉ cập nhật nếu thời gian mới nhanh hơn
+        if (compareTimeStrings(existingRecord.totalTime, newTotalTime) <= 0) {
+            return {
+                success: false,
+                playerName,
+                newTotalTime,
+                oldRecordTime: existingRecord.totalTime,
+                message: "Kỷ lục mới không được ghi nhận do không tốt hơn kỷ lục hiện tại."
+            };
+        }
+
+        // Nếu là kết quả tốt hơn, cập nhật thời gian, tính lại hạng và điểm cho người chơi này
+        const rank = await determineRank(playerName, newTotalTime);
+        const points = getPointsForRank(rank);
+
+        await leaderboardRef.doc(existingRecord.id).update({
+            totalTime: newTotalTime,
+            points,
+            rank
+        });
+
+        return {
+            success: true,
+            playerName,
+            newTotalTime,
+            rank,
+            points,
+            message: "Đã cập nhật kỷ lục mới thành công."
+        };
+
+    } catch (error) {
+        console.error("Error updating player result: ", error);
+        return { success: false, error: error.message };
+    }
+}
+
+
+async function recalculateAllRanksAndPoints() {
+    try {
+        // Lấy tất cả các bản ghi và sắp xếp theo `totalTime` từ nhanh nhất đến chậm nhất
+        const allScoresSnapshot = await db.orderBy('totalTime', 'asc').get();
+        
+        let uniqueRank = 1; // Rank cho nhóm đầu tiên
+        let previousTime = null;
+        let groupPlayers = []; // Nhóm các người chơi có cùng thời gian hoàn thành
+
+        for (const doc of allScoresSnapshot.docs) {
+            const data = doc.data();
+
+            // Nếu thời gian của người chơi khác với thời gian của nhóm hiện tại
+            if (previousTime !== null && data.totalTime !== previousTime) {
+                // Cấp điểm cho nhóm người chơi hiện tại dựa trên thứ hạng
+                const points = getPointsForRank(uniqueRank);
+                for (const playerDoc of groupPlayers) {
+                    await db.doc(playerDoc.id).update({
+                        rank: uniqueRank,
+                        points: points
+                    });
+                }
+
+                // Tăng `uniqueRank` lên 1 để chuẩn bị cho nhóm tiếp theo
+                uniqueRank++;
+                groupPlayers = [];
+            }
+
+            // Thêm người chơi vào nhóm hiện tại
+            groupPlayers.push(doc);
+            previousTime = data.totalTime;
+        }
+
+        // Xử lý nhóm cuối cùng (nếu có)
+        if (groupPlayers.length > 0) {
+            const points = getPointsForRank(uniqueRank);
+            for (const playerDoc of groupPlayers) {
+                await db.doc(playerDoc.id).update({
+                    rank: uniqueRank,
+                    points: points
+                });
+            }
+        }
+
+        console.log("Thứ hạng và điểm số đã được tính toán lại cho toàn bộ người chơi.");
+        return { success: true, message: "Thứ hạng và điểm số đã được cập nhật." };
+    } catch (error) {
+        console.error("Error recalculating ranks and points: ", error);
+        return { success: false, error: error.message };
+    }
+}
+
+
+// Hàm hiển thị bảng xếp hạng
+window.displayLeaderboard = async function() {
+    try {
+        // Đảm bảo tính toán lại thứ hạng và điểm của tất cả người chơi trước khi hiển thị
+        const recalculateResult = await recalculateAllRanksAndPoints();
+        
+        if (!recalculateResult.success) {
+            console.log("Lỗi khi tính toán lại thứ hạng và điểm số:", recalculateResult.message);
+            return;
+        }
+
+        // Sau khi tính toán xong, lấy dữ liệu mới nhất để hiển thị
+        const querySnapshot = await db.orderBy("totalTime", "asc").get();
+        
+        // Xử lý hiển thị bảng xếp hạng
+        const leaderboardElement = document.getElementById("leaderboard");
+        leaderboardElement.innerHTML = "<tr><th>Tên</th><th>Thời gian hoàn thành</th><th>Điểm</th></tr>";
+
+        querySnapshot.forEach((doc) => {
+            const entry = doc.data();
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${entry.playerName}</td>
+                <td>${entry.totalTime}</td>
+                <td>${entry.points}</td>
+            `;
+            leaderboardElement.appendChild(row);
+        });
+    } catch (error) {
+        console.log("Error getting leaderboard data: ", error);
+    }
+}
+
 
 // Đảm bảo initializeApp được gọi khi trang web load
 initializeApp();

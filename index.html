@@ -298,11 +298,6 @@ let matchedPairs = 0;
 const images = [
     { src: "images/Cá Dụ 1.png", pairId: "Dụ" }, { src: "images/Dụ 2.png", pairId: "Dụ" },
     { src: "images/Cáo Diệp 1.png", pairId: "Diệp" }, { src: "images/Diệp.png", pairId: "Diệp" },
-	{ src: "images/Cáo tuyết Lam 1.png", pairId: "Lam" }, { src: "images/Lam.png", pairId: "Lam" },
-	{ src: "images/Chuột Duệ 1.png", pairId: "Duệ" }, { src: "images/Duệ.png", pairId: "Duệ" },
-	{ src: "images/Corgi Lư 1.png", pairId: "Lư" }, { src: "images/Lư.png", pairId: "Lư" },
-	{ src: "images/Cụt Chu 1.png", pairId: "Chu" }, { src: "images/Chu.png", pairId: "Chu" },
-	{ src: "images/Hamster Tranh 1.png", pairId: "Tranh" }, { src: "images/Tranh.png", pairId: "Tranh" },
 ];
 
 // Xáo trộn hình ảnh
@@ -480,6 +475,7 @@ async function showFinalScore() {
     stopTimer();
     console.log("showFinalScore is called"); // Log để kiểm tra xem hàm có được gọi
 
+    // Tính toán thời gian hoàn thành của người chơi
     const newTotalTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
     if (!db) {
@@ -487,21 +483,21 @@ async function showFinalScore() {
         return;
     }
 
-    // Gọi updateLeaderboard để cập nhật hoặc kiểm tra kỷ lục
-    const result = await updateLeaderboard(playerName, newTotalTime);
+    // Gọi updatePlayerResult để cập nhật kỷ lục của người chơi
+    const result = await updatePlayerResult(playerName, newTotalTime);
 
-    if (!result.success && result.message) {
-        // Trường hợp không vượt qua kỷ lục cũ
-        document.getElementById('result-player-name').textContent = `Tên người chơi: ${result.playerName}`;
-        document.getElementById('result-time').textContent = `Thời gian hoàn thành mới: ${result.newTotalTime}`;
+    if (!result.success) {
+        // Trường hợp không vượt qua kỷ lục cũ hoặc có lỗi xảy ra
+        document.getElementById('result-player-name').textContent = `Tên người chơi: ${playerName}`;
+        document.getElementById('result-time').textContent = `Thời gian hoàn thành mới: ${newTotalTime}`;
         document.getElementById('result-rank').textContent = "";
-        document.getElementById('result-score').textContent = result.message;
-        document.getElementById('result-old-record').textContent = `Thời gian kỷ lục cũ: ${result.oldRecordTime}`;
+        document.getElementById('result-score').textContent = result.message || "Đã xảy ra lỗi trong quá trình cập nhật.";
+        document.getElementById('result-old-record').textContent = result.oldRecordTime ? `Thời gian kỷ lục cũ: ${result.oldRecordTime}` : "";
         document.getElementById('result-panel').style.display = 'block';
     } else {
-        // Trường hợp có kỷ lục mới
-        document.getElementById('result-player-name').textContent = `Tên người chơi: ${result.playerName}`;
-        document.getElementById('result-time').textContent = `Thời gian: ${result.newTotalTime}`;
+        // Trường hợp có kỷ lục mới hoặc cập nhật thành công
+        document.getElementById('result-player-name').textContent = `Tên người chơi: ${playerName}`;
+        document.getElementById('result-time').textContent = `Thời gian: ${newTotalTime}`;
         document.getElementById('result-rank').textContent = `Hạng: ${result.rank}`;
         document.getElementById('result-score').textContent = `Điểm: ${result.points}`;
         document.getElementById('result-panel').style.display = 'block';
@@ -511,33 +507,8 @@ async function showFinalScore() {
 
 
 
-// Hàm so sánh chuỗi thời gian "mm:ss"
-function compareTimeStrings(timeA, timeB) {
-    const [minutesA, secondsA] = timeA.split(':').map(Number);
-    const [minutesB, secondsB] = timeB.split(':').map(Number);
 
-    if (minutesA !== minutesB) {
-        return minutesA - minutesB;
-    } else {
-        return secondsA - secondsB;
-    }
-}
 
-// Hàm tính điểm dựa trên thứ hạng
-function calculateScoreBasedOnRank(rank) {
-    if (rank === 1) return 10;
-    else if (rank === 2) return 9;
-    else if (rank === 3) return 8;
-    else if (rank <= 5) return 7;
-    else if (rank <= 10) return 6;
-    return 5;
-}
-
-// Hàm giả lập tính điểm cho người chơi hiện tại (dựa trên định nghĩa)
-function calculatePlayerScore(totalTime) {
-    // Bạn có thể tùy chỉnh tính toán điểm ở đây nếu cần thiết
-    return 7; // Ví dụ, mặc định cho người chơi mới
-}
 
 
 // Hàm so sánh chuỗi thời gian "mm:ss"
