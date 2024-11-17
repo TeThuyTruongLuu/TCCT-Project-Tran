@@ -66,12 +66,12 @@ function compareTimeStrings(timeA, timeB) {
     const [minutesA, secondsA] = timeA.split(':').map(Number);
     const [minutesB, secondsB] = timeB.split(':').map(Number);
 
-    if (minutesA !== minutesB) {
-        return minutesA - minutesB;
-    } else {
-        return secondsA - secondsB;
-    }
+    const totalSecondsA = minutesA * 60 + secondsA;
+    const totalSecondsB = minutesB * 60 + secondsB;
+
+    return totalSecondsA - totalSecondsB;
 }
+
 
 
 // Hàm cập nhật kết quả cho người chơi mới hoặc cập nhật thời gian mới cho người chơi hiện tại
