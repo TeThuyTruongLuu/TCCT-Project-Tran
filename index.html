@@ -38,7 +38,7 @@
     }
     .game-board {
         display: grid;
-        grid-template-columns: repeat(9, 1fr);
+        grid-template-columns: repeat(10, 1fr);
         grid-gap: 10px;
         width: 85vw;
         max-width: 95vw;
@@ -235,8 +235,8 @@
     @media (max-width: 600px) {
         .game-board {
             grid-template-columns: repeat(5, 1fr);
-            grid-gap: 8px;
-			padding-top: 160vw;
+            grid-gap: 5px;
+			padding-top: 105vw;
         }
         .card {
             padding-top: 80%;
@@ -245,9 +245,10 @@
 			font-size: 3vw;
 		}
 		#memory-instructions {
-			padding-top: 105vw;
+			padding-top: 75vw;
 			position: absolute;
 			padding-left: 9vw;
+			font-size: 3vw;
 		}
     }
 </style>
@@ -352,7 +353,15 @@ const images = [
 	{ src: "images/Trâu.png", pairId: "Trâu" }, { text: "Trâu", pairId: "Trâu" },
 	{ src: "images/Trương.png", pairId: "Trương" }, { text: "Trương", pairId: "Trương" },
 	{ src: "images/Tường.png", pairId: "Tường" }, { text: "Tường", pairId: "Tường" },
-
+	{ src: "images/Cún bự Bao 1.png", pairId: "Bao" }, { text: "Bao", pairId: "Bao" },
+	{ src: "images/Cún La 1.png", pairId: "La" }, { text: "La", pairId: "La" },
+	{ src: "images/Cú An 1.png", pairId: "An" }, { text: "An", pairId: "An" },
+	{ src: "images/Lão cẩu Ngụy 1.png", pairId: "Ngụy" }, { text: "Ngụy", pairId: "Ngụy" },
+	{ src: "images/Linh miêu bự Phương 1.png", pairId: "Phương" }, { text: "Phương", pairId: "Phương" },
+	{ src: "images/Mèo Nhu 1.png", pairId: "Nhu" }, { text: "Nhu", pairId: "Nhu" },
+	{ src: "images/Mèo Quả 1.png", pairId: "Quả" }, { text: "Quả", pairId: "Quả" },
+	{ src: "images/Quạ Mạc 1.png", pairId: "Mạc" }, { text: "Mạc", pairId: "Mạc" },
+	{ src: "images/Hải ly Quan.png", pairId: "Quan" }, { text: "Quan", pairId: "Quan" },
 	
 ];
 
