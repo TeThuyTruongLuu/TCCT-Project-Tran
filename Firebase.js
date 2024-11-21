@@ -115,7 +115,7 @@ function createYoutubePlayer(videoId) {
             },
             events: {
                 onReady: (event) => {
-                    event.target.setVolume(20); // Đặt âm lượng
+                    event.target.setVolume(backgroundMusic.volume * 100); // Đặt âm lượng
                     isPlaying = true;
                     updateButtons();
                 },
