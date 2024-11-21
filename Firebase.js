@@ -1,7 +1,7 @@
 // Khai báo biến toàn cục
 let db;
 let youtubePlayer;
-let isPlaying = false;
+let isYouTubePlaying = false;
 let backgroundMusic = new Audio('musics/background music.m4a');
 
 function initializeApp() {
@@ -30,15 +30,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const startButton = document.getElementById('ready-button');
     if (startButton) {
         startButton.addEventListener('click', () => {
-            if (backgroundMusic.paused) {
+            if (!isYouTubePlaying) { // Chỉ phát nhạc nền nếu YouTube không phát
                 backgroundMusic.loop = true;
                 backgroundMusic.volume = 0.2;
                 backgroundMusic.play().catch((error) => {
                     console.warn("Không thể phát nhạc nền:", error);
                 });
             }
-        });
-    }
+		});
+	}
 
     // Xử lý sự kiện nút "Phát nhạc"
     const playButton = document.getElementById('play-youtube-music');
@@ -50,7 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (videoId) {
                 document.getElementById('player-container').style.display = 'block';
                 createYoutubePlayer(videoId);
-                backgroundMusic.pause(); // Dừng nhạc nền
+                backgroundMusic.pause(); 
+				isYouTubePlaying = true;
             } else {
                 alert('Vui lòng nhập URL YouTube hợp lệ!');
             }
@@ -115,7 +116,7 @@ function createYoutubePlayer(videoId) {
             },
             events: {
                 onReady: (event) => {
-                    event.target.setVolume(backgroundMusic.volume * 100); // Đặt âm lượng
+                    event.target.setVolume(100); // Đặt âm lượng
                     isPlaying = true;
                     updateButtons();
                 },
