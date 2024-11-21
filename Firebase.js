@@ -125,9 +125,12 @@ function createYoutubePlayer(videoId) {
                         isPlaying = true;
                         backgroundMusic.pause(); // Dừng nhạc nền
                     } else if (event.data === YT.PlayerState.ENDED) {
-                        backgroundMusic.play(); // Phát lại nhạc nền khi video kết thúc
-                    }
+                        isYouTubePlaying = false;
+						backgroundMusic.play().catch((error) => {
+                            console.warn("Không thể phát nhạc nền:", error);
+						});
                     updateButtons();
+                    }
                 }
             }
         });
