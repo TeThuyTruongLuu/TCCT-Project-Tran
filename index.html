@@ -562,6 +562,12 @@ async function showFinalScore() {
     // Gọi updatePlayerResult để cập nhật kỷ lục của người chơi
     const result = await updatePlayerResult(playerName, newTotalTime);
 
+    // Recalculate leaderboard to synchronize ranks and points
+    const recalculateResult = await recalculateAllRanksAndPoints();
+    if (!recalculateResult.success) {
+        console.error("Error recalculating leaderboard ranks:", recalculateResult.error);
+    }
+	
     if (!result.success) {
         // Trường hợp không vượt qua kỷ lục cũ hoặc có lỗi xảy ra
         document.getElementById('result-player-name').textContent = `Tên người chơi: ${playerName}`;
