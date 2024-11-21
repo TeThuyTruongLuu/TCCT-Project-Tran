@@ -1,5 +1,8 @@
 // Khai báo biến toàn cục
 let db;
+let youtubePlayer;
+let isPlaying = false;
+let backgroundMusic = new Audio('musics/background music.m4a');
 
 function initializeApp() {
     // Cấu hình Firebase
@@ -19,6 +22,140 @@ function initializeApp() {
     const firestore = firebase.firestore();
     db = firestore.collection("leaderboard"); // Gán db trực tiếp là collection "leaderboard"
 }
+
+
+// Chờ DOM tải hoàn chỉnh trước khi gắn sự kiện
+document.addEventListener('DOMContentLoaded', () => {
+
+    const startButton = document.getElementById('ready-button');
+    if (startButton) {
+        startButton.addEventListener('click', () => {
+            if (backgroundMusic.paused) {
+                backgroundMusic.loop = true;
+                backgroundMusic.volume = 0.2;
+                backgroundMusic.play().catch((error) => {
+                    console.warn("Không thể phát nhạc nền:", error);
+                });
+            }
+        });
+    }
+
+    // Xử lý sự kiện nút "Phát nhạc"
+    const playButton = document.getElementById('play-youtube-music');
+    if (playButton) {
+        playButton.addEventListener('click', () => {
+            const url = document.getElementById('youtube-url').value.trim();
+            const videoId = extractYouTubeId(url);
+
+            if (videoId) {
+                document.getElementById('player-container').style.display = 'block';
+                createYoutubePlayer(videoId);
+                backgroundMusic.pause(); // Dừng nhạc nền
+            } else {
+                alert('Vui lòng nhập URL YouTube hợp lệ!');
+            }
+        });
+    }
+
+    // Xử lý nút "Tạm dừng"
+    const pauseButton = document.getElementById('pause-youtube-music');
+    pauseButton.addEventListener('click', () => {
+        if (youtubePlayer) {
+            youtubePlayer.pauseVideo();
+        } else {
+            backgroundMusic.pause();
+        }
+        isPlaying = false;
+        updateButtons();
+    });
+
+    // Xử lý nút "Tiếp tục"
+    const resumeButton = document.getElementById('resume-youtube-music');
+    resumeButton.addEventListener('click', () => {
+        if (youtubePlayer) {
+            youtubePlayer.playVideo();
+        } else {
+            backgroundMusic.play();
+        }
+        isPlaying = true;
+        updateButtons();
+    });
+
+    // Xử lý nút "Thay đổi nhạc"
+    const changeButton = document.getElementById('change-youtube-music');
+    changeButton.addEventListener('click', () => {
+        const url = document.getElementById('youtube-url').value.trim();
+        const videoId = extractYouTubeId(url);
+
+        if (videoId) {
+            createYoutubePlayer(videoId);
+            backgroundMusic.pause(); // Dừng nhạc nền
+        } else {
+            alert('Vui lòng nhập URL YouTube hợp lệ!');
+        }
+        updateButtons();
+    });
+});
+
+// Hàm khởi tạo trình phát YouTube
+function createYoutubePlayer(videoId) {
+    if (youtubePlayer) {
+        youtubePlayer.loadVideoById(videoId); // Tải video mới nếu trình phát đã tồn tại
+    } else {
+        youtubePlayer = new YT.Player('player-container', {
+            height: '0', // Ẩn video
+            width: '0',
+            videoId: videoId,
+            playerVars: {
+                autoplay: 1, // Tự động phát
+                loop: 1, // Lặp lại
+                playlist: videoId, // Đảm bảo lặp
+                controls: 0, // Ẩn nút điều khiển
+                modestbranding: 1 // Giảm branding
+            },
+            events: {
+                onReady: (event) => {
+                    event.target.setVolume(20); // Đặt âm lượng
+                    isPlaying = true;
+                    updateButtons();
+                },
+                onStateChange: (event) => {
+                    if (event.data === YT.PlayerState.PLAYING) {
+                        isPlaying = true;
+                        backgroundMusic.pause(); // Dừng nhạc nền
+                    } else if (event.data === YT.PlayerState.ENDED) {
+                        backgroundMusic.play(); // Phát lại nhạc nền khi video kết thúc
+                    }
+                    updateButtons();
+                }
+            }
+        });
+    }
+}
+
+// Hàm trích xuất YouTube video ID từ URL
+function extractYouTubeId(url) {
+    const regex = /(?:https?:\/\/)?(?:www\.)?youtube\.com\/.*v=([a-zA-Z0-9_-]+)|youtu\.be\/([a-zA-Z0-9_-]+)/;
+    const match = url.match(regex);
+    return match ? (match[1] || match[2]) : null;
+}
+
+// Hàm cập nhật trạng thái nút
+function updateButtons() {
+    const pauseButton = document.getElementById('pause-youtube-music');
+    const resumeButton = document.getElementById('resume-youtube-music');
+    const changeButton = document.getElementById('change-youtube-music');
+
+    if (isPlaying) {
+        pauseButton.style.display = 'inline-block';
+        resumeButton.style.display = 'none';
+    } else {
+        pauseButton.style.display = 'none';
+        resumeButton.style.display = 'inline-block';
+    }
+    changeButton.style.display = 'inline-block';
+}
+
 
 async function determineRank(playerName, newTotalTime) {
     const allScoresSnapshot = await db.orderBy('totalTime', 'asc').get(); // Sắp xếp từ nhanh nhất đến chậm nhất
