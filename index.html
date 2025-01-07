@@ -615,8 +615,6 @@ async function showFinalScore() {
         // Trường hợp có kỷ lục mới hoặc cập nhật thành công
         document.getElementById('result-player-name').textContent = `Tên người chơi: ${playerName}`;
         document.getElementById('result-time').textContent = `Thời gian: ${newTotalTime}`;
-        document.getElementById('result-rank').textContent = `Hạng: ${result.rank}`;
-        document.getElementById('result-score').textContent = `Điểm: ${result.points}`;
         document.getElementById('result-panel').style.display = 'block';
     }
 }
