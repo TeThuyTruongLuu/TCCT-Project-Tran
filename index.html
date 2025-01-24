@@ -8,16 +8,16 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Matching Game</title>
+<title>Tìm hình giống nhau</title>
 <style>
     body {
         display: flex;
         flex-direction: column;
         align-items: center;
         font-family: Roboto;
-        background-color: #F3F7FA;
+        background-color: #effaf3;
         margin: 0;
-        height: 100vh;
+        min-height: 80vh;
         justify-content: center;
         overflow-y: auto;
         position: relative;
@@ -46,7 +46,7 @@
         max-width: 95vw;
         display: none;
 		justify-content: center;
-		padding-top: 63vw;
+		padding-top: 20vw;
     }
 
     /* Thiết kế bảng nhập mã */
@@ -56,16 +56,16 @@
         align-items: center;
         padding: 20px;
         border-radius: 14px;
-        background-color: #FFFFFF;
+        background-color: #fcfcfc;
         box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
-        position: fixed;
+        position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         z-index: 10;
         color: #1F271B;
         width: 70vw;
-        max-width: 100%;
+        max-width: 50%;
         box-sizing: border-box;
     }
     #login-modal h2 {
@@ -76,7 +76,7 @@
         margin: 10px 0;
         padding: 12px;
         font-size: 16px;
-        border: 1px solid #A9FBD7;
+        border: 1px solid #808080;
         border-radius: 8px;
         width: 100%;
         max-width: 350px;
@@ -129,8 +129,16 @@
 		max-width: 80vw;
 		word-wrap: break-word;
 	}
+	#cre {
+		display: grid;
+		margin: auto;
+		width: 80%;
+		padding: 10px;
+		display: none;
+	}
+	
 	#memory-instructions {
-		padding-top: 45vw;
+		padding-top: 2vw;
 		position: absolute;
 		padding-left: 20vw;
 	}
@@ -145,6 +153,7 @@
         color: #5A5766;
         transition: background-color 0.3s;
         font-weight: bold;
+		color: #010101;
     }
     #ready-button {
         background-color: #F6D0B1;
@@ -157,6 +166,7 @@
         transition: background-color 0.3s;
         font-weight: bold;
 		margin: 0 auto;
+		color: #010101;
     }
 
     /* Thiết kế thẻ (card) */
@@ -231,14 +241,48 @@
         font-size: 2vw;
         font-weight: bold;
 		font-family: Roboto;
+		border-radius: 8px;
     }
+
+	#ytmusic {
+		display: flex;
+		align-items: center;  /* Căn giữa các phần tử theo chiều dọc */
+		justify-content: center; /* Căn giữa theo chiều ngang */
+		gap: 10px;  /* Tạo khoảng cách giữa ô nhập và nút */
+		max-width: 80%; /* Rút gọn chiều rộng khung */
+		margin: 20px auto; /* Căn giữa trên trang */
+	}
+
+	#youtube-url {
+		flex: 1; /* Giúp input co dãn trong khung flex */
+		max-width: 300px; /* Giới hạn chiều rộng tối đa */
+		padding: 10px;
+		border: 1px solid #ccc;
+		border-radius: 5px;
+	}
+
+	#play-youtube-music, #pause-youtube-music {
+		background-color: transparent;
+		border: none;
+		cursor: pointer;
+		font-size: 24px;
+		padding: 10px;
+	}
+	.hidden {
+		display: none !important; /* Ẩn hoàn toàn khi được thêm class */
+	}
+
 
     /* Responsive adjustments */
     @media (max-width: 600px) {
+		#login-modal {
+			max-width: 100%;
+		}
         .game-board {
             grid-template-columns: repeat(5, 1fr);
             grid-gap: 5px;
-			padding-top: 195vw;
+			padding-top: 75vw;
+			max-height: none;
         }
         .card {
             padding-top: 80%;
@@ -247,18 +291,16 @@
 			font-size: 3vw;
 		}
 		#memory-instructions {
-			padding-top: 130vw;
-			position: absolute;
-			font-size: 3vw;
-			padding-left: 6vw;
-		}
-		#ytmusic {
-			padding-top: 130vw;
-			position: absolute;
-			font-size: 3vw;
+			display: grid;
+			margin: auto;
+			width: 80%;
+			padding: 10px;
+			padding-top: 5vh;
+			font-size: 4vw;
+			display: none;
 		}
 		.timer-board {
-			font-size: 3vw;
+			font-size: 4.5vw;
 		}
     }
 
@@ -267,18 +309,18 @@
 <body>
     <div class="timer-board">Thời gian: <span id="timer">00:00</span></div>
     <div id="login-modal">
-        <h2>Nhập đầy đủ để chơi nhé</h2>
+        <h2>Đăng nhập</h2>
         <input type="text" id="code-input" placeholder="Nhập code là 'Tran'">
         <input type="text" id="nickname-input" placeholder="Tên của bồ">
+		<br>
         <button id="start-button">Bắt đầu</button>
     </div>
 	<div>
 		<div id="memory-instructions" style="align: center;">
 			<h2>Thời gian ghi nhớ</h2>
-			<p>Dưới đây là các cặp bồ sẽ phải ghép và tên nhân vật, bồ có thể ghi nhớ bao lâu tùy thích.</p>
-			<p>Bỏ trống ô dưới để nghe nhạc mặc định hoặc nhập link nhạc bồ thích bên dưới.</p>
-			<p>Sau khi sẵn sàng, hãy nhấn "Vào game" nè ⸜(｡˃ ᵕ ˂ )⸝♡</p>
-			<div id="ytmusic" style="padding-top: 0vw; text-align: center; margin: 10px; align: center;">
+			<p>Bồ có thể nhớ bao lâu tùy thích. Khi bồ đã sẵn sàng? Nhấn "Vào game" nhé ⸜(｡˃ ᵕ ˂ )⸝♡</p>
+			<p>Bỏ trống/nhập link YouTube để nghe nhạc mặc định/yêu thích.</p>
+			<div id="ytmusic">
 				<!-- Ô nhập link YouTube -->
 				<input id="youtube-url" type="text" placeholder="Nhập link YouTube bài hát" 
 					   style="width: 300px; padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
@@ -300,13 +342,14 @@
 			</div>
 			<div id="player-container" style="display: none;"></div>
 		</div>
+	<div>
 		<div class="game-board">
 			<!-- Cards sẽ được tạo động bằng JavaScript -->
 		</div>
 	</div>
 	<div id="cre">
 		<p></p>
-		<p style="font-size: 12px;">Cre: Commission của Phong, series lẩu vẽ bởi artist Ryuuo Jiro, series chibi động vật vẽ bởi Zevyd Lykier</p>
+		<p style="font-size: 14px;">Cre: Commission của Phong, series lẩu vẽ bởi artist <a href="https://www.facebook.com/allan.hassan.240223">Ryuuo Jiro</a>, series chibi động vật vẽ bởi Zevyd Lykier</p>
 		<p></p>
 		<button id="ready-button">Vào game</button>
 		<p></p>
@@ -524,7 +567,11 @@ document.getElementById('ready-button').addEventListener('click', () => {
     document.querySelectorAll('.card-overlay').forEach(overlay => {
         overlay.style.display = 'none';
     });
-    document.getElementById('memory-instructions').style.display = 'none';
+    document.getElementById('memory-instructions').style.visibility = 'hidden';
+
+	document.querySelector('.game-board').style.transform = 'translateY(-25vh)';
+	document.querySelector('#cre').style.transform = 'translateY(-20vh)';
+
 
     // Xáo trộn lại vị trí các thẻ
     shuffleCards();
