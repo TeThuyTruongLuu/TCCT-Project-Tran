@@ -365,16 +365,23 @@ window.displayLeaderboard = async function() {
         const querySnapshot = await db.orderBy("rank", "asc").get();
 
         const leaderboardElement = document.getElementById("leaderboard");
-        leaderboardElement.innerHTML = "<tr><th>Hạng</th><th>Tên</th><th>Thời gian hoàn thành</th><th>Điểm</th></tr>";
+        leaderboardElement.innerHTML = `
+            <tr>
+                <th style="width: 25%;">Hạng</th>
+                <th style="width: 25%;">Tên</th>
+                <th style="width: 25%;">Thời gian</th>
+                <th style="width: 25%;">Điểm</th>
+            </tr>
+        `;
 
         querySnapshot.forEach((doc) => {
             const entry = doc.data();
             const row = document.createElement("tr");
-            row.innerHTML = `
-				<td>${entry.rank}</td>
-                <td>${entry.playerName}</td>
-                <td>${entry.totalTime}</td>
-                <td>${entry.points}</td>
+			row.innerHTML = `
+                <td style="width: 10%;">${entry.rank}</td>
+                <td style="width: 40%;">${entry.playerName}</td>
+                <td style="width: 30%;">${entry.totalTime}</td>
+                <td style="width: 20%;">${entry.points}</td>
             `;
             leaderboardElement.appendChild(row);
         });
@@ -382,6 +389,7 @@ window.displayLeaderboard = async function() {
         console.log("Error getting leaderboard data: ", error);
     }
 }
+
 
 // Đảm bảo initializeApp được gọi khi trang web load
 initializeApp();
